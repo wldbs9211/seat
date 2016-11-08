@@ -53,6 +53,22 @@ public class LoginActivity extends AppCompatActivity {
                 Log.d(TAG, "입력한 아이디 : " + id);
                 Log.d(TAG, "입력한 패스워드 : " + password);
 
+
+                // 나중에 서버가 종료되었을 때 서버 없이도 데모를 보여줄 수 있도록 만드는 admin 계정이다.
+                if(id.equals("admin") && password.equals("admin")){
+                    // 로그인 정보를 저장하기 위한 sharedPreferences
+                    SharedPreferences prefs = getSharedPreferences("UserStatus", MODE_PRIVATE);
+                    SharedPreferences.Editor editor = prefs.edit();
+
+                    editor.putString("isLoggedIn", "true"); // 로그인 상태 true로
+                    editor.putString("UserNumber", "admin"); // UserNumber 세팅
+                    editor.commit();
+
+                    startActivity(new Intent(getApplicationContext(), Tutorial1Activity.class));  // 다음으로 이동
+                    finish();
+                }
+                // admin 계정 관련 부분 끝
+
                 String[] params = new String[1];
                 params[0] = id;
 

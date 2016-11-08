@@ -162,7 +162,7 @@ public class BluetoothService extends Service {
                     }
 
                     timer = new Timer();
-                    timer.schedule(timerTask_Tab1, 1000, 2000);  // Tab1전용 task를 1초 후 2초마다 실행
+                    timer.schedule(timerTask_Tab1, 1000, 2000);  // Tab1전용 task(방석 연결상태)를 1초 후 2초마다 실행
                     break;
 
                 case 1 :    // Tab3를 보는 경우
@@ -176,7 +176,7 @@ public class BluetoothService extends Service {
                     }
 
                     timer = new Timer();
-                    timer.schedule(timerTask_Tab3, 1000, 1000); // Tab3전용 task를 1초 후 1초마다 실행
+                    timer.schedule(timerTask_Tab3, 1000, 1000); // Tab3전용 task(방석에 실시간 데이터 요청)를 1초 후 1초마다 실행
 
                     Log.d(TAG, "실시간용 리스너를 등록한다.");
 
@@ -463,7 +463,6 @@ public class BluetoothService extends Service {
         Log.d(TAG,"상체앞" + positionProbability[3]);
         Log.d(TAG,"상체뒤" + positionProbability[4]);
         Log.d(TAG,"엉덩이 앞" + positionProbability[5]);
-
 
         int positionResult = getMinIndex(positionProbability);
 
