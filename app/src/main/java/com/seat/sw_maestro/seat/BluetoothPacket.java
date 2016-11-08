@@ -1,9 +1,15 @@
 package com.seat.sw_maestro.seat;
 
+import android.util.Log;
+
+import java.util.Calendar;
+
 /**
  * Created by JiYun on 2016. 11. 6..
  */
 public class BluetoothPacket {
+    final static String TAG = "BluetoothPacket";
+
     byte start;
     byte mode;
     byte length;
@@ -11,6 +17,10 @@ public class BluetoothPacket {
     short[] value;
     byte[] crc;
     byte end;
+
+    BluetoothPacket(){
+
+    }
 
     BluetoothPacket(byte[] data) {
         start = data[0];
@@ -79,4 +89,63 @@ public class BluetoothPacket {
         System.out.println(byteToString);
      */
 
+    Calendar calendar = Calendar.getInstance(); // 현재시간
+
+
+
+    byte[] makeCommonModePacket(){  // 일반모드용 요청 패킷
+        /* 패킷의 구성
+        | Start(0xFF) | Mode(0x01) | YY MM DD hh mm | Length(0x07) | End(0xFE) |
+        1, 1, 5, 1, 1 바이트씩 총 9Byte 크기의 패킷
+         */
+
+        Calendar calendar = Calendar.getInstance(); // 현재시간
+
+        int year = calendar.get(Calendar.YEAR);
+        year = year - 2000; // 2016년 -> 16만 보낸다
+
+        int month = calendar.get(Calendar.MONTH);
+        month = month + 1;  // 캘린더는 월이 0부터 시작. 1 더해줌
+
+        int day = calendar.get(Calendar.DATE);
+
+        int hour = calendar.get(Calendar.HOUR);
+        if(calendar.get(Calendar.AM_PM) == 1){  // PM인 경우에는 시간을 12를 더해준다. 1은 PM
+            hour = hour + 12;
+        }
+
+        int minute = calendar.get(Calendar.MINUTE);
+
+        byte[] commonModePacket = new byte[9];
+
+        commonModePacket[0] = (byte)0xFF;
+        commonModePacket[1] = (byte)0x01;
+        commonModePacket[2] = (byte)year;
+        commonModePacket[3] = (byte)month;
+        commonModePacket[4] = (byte)day;
+        commonModePacket[5] = (byte)hour;
+        commonModePacket[6] = (byte)minute;
+        commonModePacket[7] = (byte)0x07;
+        commonModePacket[8] = (byte)0xFE;
+
+        Log.d(TAG, "일반모드 패킷 생성");
+        return commonModePacket;
+    }
+
+    byte[] makeRealTimeModePacket(){  // 실시간모드용 요청 패킷
+        /* 패킷의 구성
+        | Start(0xFF) | Mode(0x02) | Length(0x02) | End(0xFE) |
+        1, 1, 1, 1 바이트씩 총 4Byte 크기의 패킷
+         */
+
+        byte[] commonModePacket = new byte[4];
+
+        commonModePacket[0] = (byte)0xFF;
+        commonModePacket[1] = (byte)0x02;
+        commonModePacket[2] = (byte)0x02;
+        commonModePacket[3] = (byte)0xFE;
+
+        Log.d(TAG, "실시간모드 패킷 생성");
+        return commonModePacket;
+    }
 }

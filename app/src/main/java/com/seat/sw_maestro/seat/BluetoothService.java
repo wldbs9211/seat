@@ -40,10 +40,11 @@ import app.akexorcist.bluetotohspp.library.BluetoothState;
 public class BluetoothService extends Service {
 
     private static final String TAG = "BluetoothService";
-    private static final String SeatName = "wnjungod";    // 방석의 블루투스 이름을 입력한다.
+    private static final String SeatName = "Seat";    // 방석의 블루투스 이름을 입력한다.
     BluetoothSPP bt;
     private Messenger mRemote;  // 서비스와 액티비티 간에 통신을 하기 위해서 쓰는 메신저
     Timer timer;    // 일정시간마다 일을 하기 위해서 .. 타이머
+    BluetoothPacket bluetoothPacket; // 블루투스 패킷 관련
 
     int serviceState = 0;   // 서비스의 상태. 값은 아래를 보세요.
     private static final int STATE_COMMON = 0;  // 일반모드
@@ -116,13 +117,14 @@ public class BluetoothService extends Service {
 
     // Service handler 추가  액티비티 -> 서비스로 받아오는 경우.
     private class RemoteHandler extends Handler {
+
         @Override
         public void handleMessage(Message msg) {
 
             // 일반모드
             TimerTask timerTask_Common = new TimerTask() {
                 public void run() { // 일반모드에서 어떻게 동작하는지
-                    //Log.d(TAG, "TimerTask_Common 실행 됨");
+                    bt.send(bluetoothPacket.makeCommonModePacket(), false); // 일반모드 요청 패킷을 보낸다.
                 }
             };
 
@@ -131,7 +133,7 @@ public class BluetoothService extends Service {
             // 주기적으로 방석의 상태를 보내주는 일을 한다. 이것을 안하면 바뀌는 순간에만 텍스트뷰를 바꾸니... 바뀐 순간에 그 화면을 안보면 안바꿔짐
             TimerTask timerTask_Tab1 = new TimerTask() {
                 public void run() {
-                    //Log.d(TAG, "TimerTask_Tab1 실행 됨");
+                    Log.d(TAG, "TimerTask_Tab1 실행 됨");
                     //Log.d(TAG, "현재 상태 : " + serviceState);
                     if (bt != null && bt.getServiceState() == 3)   // 3이면 블루투스에서 연결상태임
                         remoteSendMessage_Tab1("1"); // 연결되었다고 보내자.
@@ -145,8 +147,8 @@ public class BluetoothService extends Service {
             // 자세의 결과를 보내준다.
             TimerTask timerTask_Tab3 = new TimerTask() {
                 public void run() {
-                    //Log.d(TAG, "TimerTask_Tab3 실행 됨");
-                    //Log.d(TAG, "현재 상태 : " + serviceState);
+                    Log.d(TAG, "TimerTask_Tab3 실행 됨");
+                    bt.send(bluetoothPacket.makeRealTimeModePacket(), false);   // 실시간모드 요청 패킷을 보낸다.
                 }
             };
 
@@ -176,7 +178,7 @@ public class BluetoothService extends Service {
                     }
 
                     timer = new Timer();
-                    timer.schedule(timerTask_Tab3, 1000, 1000); // Tab3전용 task(방석에 실시간 데이터 요청)를 1초 후 1초마다 실행
+                    timer.schedule(timerTask_Tab3, 1000, 10000); // Tab3전용 task(방석에 실시간 데이터 요청)를 1초 후 1초마다 실행
 
                     Log.d(TAG, "실시간용 리스너를 등록한다.");
 
@@ -219,7 +221,7 @@ public class BluetoothService extends Service {
                         // 여기로 들어온 경우에는 홈 화면을 보는 것이다. 타이머 일반모드 실행시켜야함.
                         // 서비스의 동작을 일반모드로 변경
                         timer = new Timer();
-                        timer.schedule(timerTask_Common, 1000, 1000);   // 일반모드 실행
+                        timer.schedule(timerTask_Common, 1000, 30000);   // 일반모드 실행
                         serviceState = STATE_COMMON;
                     }
                     break;
@@ -235,7 +237,7 @@ public class BluetoothService extends Service {
                         // 여기로 들어온 경우에는 홈 화면을 보는 것이다. 타이머 일반모드 실행시켜야함.
                         // 서비스의 동작을 일반모드로 변경
                         timer = new Timer();
-                        timer.schedule(timerTask_Common, 1000, 1000);   // 일반모드 실행
+                        timer.schedule(timerTask_Common, 1000, 30000);   // 일반모드 실행
                         serviceState = STATE_COMMON;
                     }
                     break;
@@ -249,6 +251,7 @@ public class BluetoothService extends Service {
 
     @Override
     public void onCreate() {
+        bluetoothPacket = new BluetoothPacket();
 
         //* 알고리즘
         perceptron0 = new Perceptron(9);
@@ -352,18 +355,17 @@ public class BluetoothService extends Service {
         });
         Log.d(TAG,"서비스가 시작되었습니다.");
 
-
-
         // 서비스가 생성될 때는 TimerTask를 일반모드로 생성한다.
+        // 위에 핸들러에도 있는데 여기다 또 만드는 이유는 서비스가 죽었다가 자동으로 살아나는 경우에도 실행될 수 있도록..(안하면 앱을 들어갔다 나와야 실행된다.)
         // 일반모드
         TimerTask timerTask_Common = new TimerTask() {
             public void run() { // 일반모드에서 어떻게 동작하는지
-                //Log.d(TAG, "TimerTask_Common 실행 됨");
+                bt.send(bluetoothPacket.makeCommonModePacket(), false); // 일반모드 요청 패킷을 보낸다.
             }
         };
 
         timer = new Timer();
-        timer.schedule(timerTask_Common, 1000, 1000);   // 일반모드 실행
+        timer.schedule(timerTask_Common, 1000, 30000);   // 일반모드 실행
         serviceState = STATE_COMMON;
 
         setAlarm(); // 서비스가 실행될 때 알람을 실행한다. 1시간마다 실행하며 값을 정산해서 DB에 넣는 부분.
