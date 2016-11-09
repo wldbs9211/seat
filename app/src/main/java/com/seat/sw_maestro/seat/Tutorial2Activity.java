@@ -34,7 +34,7 @@ public class Tutorial2Activity extends AppCompatActivity {
     Button buttonConnect;
     BluetoothSPP bt; // 블루투스
     private static final String TAG = "Tutorial2Activity";
-    private static final String SeatName = "wonjun";    // 방석의 블루투스 이름을 입력한다.
+    private static final String SeatName = "seat";    // 방석의 블루투스 이름을 입력한다.
 
     @Override
     protected void onDestroy() {
@@ -64,9 +64,6 @@ public class Tutorial2Activity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "블루투스 연결 상태 : " + bt.getServiceState());
-                Log.d(TAG, "방석 페어링 상태 : " + isPairedSeat("wonjun"));
-                Log.d(TAG, "방석 페어링 상태 : " + isPairedSeat("방지윤의 MacBook Pro"));
-                Log.d(TAG, "방석 페어링 상태 : " + isPairedSeat("이건 없지롱"));
 
                 if(isPairedSeat(SeatName)){  // 페어링 리스트 중에 방석이 있으면 넘어간다. (블루투스가 연결이 되어 있지 않다면 다 false로 나옴)
                     startActivity(new Intent(getApplicationContext(), Tutorial3Activity.class));  // 다음으로 이동
@@ -162,6 +159,8 @@ public class Tutorial2Activity extends AppCompatActivity {
 
         if (pairedDevices.size() > 0) {
             for (BluetoothDevice device : pairedDevices) { // 페어링 리스트를 하나씩 비교하며
+                Log.d(TAG, "페어링된 디바이스 이름 : " + device.getName());
+                Log.d(TAG, "Seat 이름 : " + seatName);
                 if(device.getName().equals(seatName))    // Seat의 이름이 있는지 확인한다.
                     isPairedSeat = true;    // 리스트 중 있다면 true로
             }

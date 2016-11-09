@@ -34,7 +34,7 @@ public class TabActivity extends AppCompatActivity {
     // 넘어가도 된다면 BluetoothService를 호출한다.
 
     private static final String TAG = "TabActivity";
-    private static final String SeatName = "wonjun";    // 방석의 블루투스 이름을 입력한다.
+    private static final String SeatName = "seat";    // 방석의 블루투스 이름을 입력한다.
 
     @Override
     public void onDestroy() {
@@ -158,8 +158,12 @@ public class TabActivity extends AppCompatActivity {
 
         if (pairedDevices.size() > 0) {
             for (BluetoothDevice device : pairedDevices) { // 페어링 리스트를 하나씩 비교하며
-                if(device.getName().equals(seatName))    // Seat의 이름이 있는지 확인한다.
+                Log.d(TAG,"블루투스 페어링 이름 : " + device.getName());
+                Log.d(TAG,"Seat 이름 : " + seatName);
+                if(device.getName().equals(seatName)) {    // Seat의 이름이 있는지 확인한다.
+                    Log.d(TAG, "일치하는 블루투스 페어링이 존재한다.");
                     isPairedSeat = true;    // 리스트 중 있다면 true로
+                }
             }
         }
         return isPairedSeat;
