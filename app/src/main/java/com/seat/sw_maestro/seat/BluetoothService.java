@@ -39,10 +39,12 @@ import app.akexorcist.bluetotohspp.library.BluetoothState;
 
 public class BluetoothService extends Service {
 
+    int packet_count = 0;
+
     private static final String TAG = "BluetoothService";
     private static final String SeatName = "seat";    // 방석의 블루투스 이름을 입력한다.
-    private static final int commonModeInterval = 5000; // 일반모드 실행주기
-    private static final int realTimeModeInterval = 5000;   // 실시간모드 실행주기
+    private static final int commonModeInterval = 10000; // 일반모드 실행주기
+    private static final int realTimeModeInterval = 500;   // 실시간모드 실행주기
     private static final int tab1ModeInterval = 3000;   // 방석연결상태 실행주기
 
     BluetoothSPP bt;
@@ -269,20 +271,27 @@ public class BluetoothService extends Service {
 
         // 자동연결부분
         bt.setupService();
+        //bt.startService(BluetoothState.DEVICE_ANDROID);
         bt.startService(BluetoothState.DEVICE_OTHER);
         bt.autoConnect(SeatName);
 
         // 블루투스 리스너
         bt.setOnDataReceivedListener(new BluetoothSPP.OnDataReceivedListener() {
             public void onDataReceived(byte[] data, String message) {
-                    // Do something when data incoming
-                    Log.d(TAG, "블루투스 데이터 받았다 -> " + message);
-                    Log.d(TAG, "받은 데이터 길이 : " + data.length);
+                // Do something when data incoming
+                Log.d(TAG, "블루투스 데이터 받았다 -> " + message);
+                //Log.d(TAG, "받은 데이터 길이 : " + data.length);
+                    /*
                     for(int i = 0; i < data.length ; i++){
-                        Log.d(TAG, "" + data[i]);
-                    }
-                    //Toast.makeText(getApplicationContext(), "데이터를 받았다.", Toast.LENGTH_SHORT).show();
-                    //bt.send("1",true);
+                    //Log.d(TAG, "" + data[i]);
+                    String binary = String.format("%8s", Integer.toBinaryString(data[i] & 0xFF)).replace(' ', '0');
+                    Log.d(TAG, "data[" + i + "] : " + binary );
+                }
+                */
+                bluetoothPacket.decodePacket(data);
+
+                packet_count++;
+                Log.d(TAG, "받은 패킷 개수 : " + packet_count);
             }
         });
 
