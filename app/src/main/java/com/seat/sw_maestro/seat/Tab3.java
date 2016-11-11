@@ -23,6 +23,16 @@ import app.akexorcist.bluetotohspp.library.BluetoothSPP;
 
 public class Tab3 extends Fragment {
 
+    // 자세별 코드
+    private static final String standard = "0";  // 정자세
+    private static final String leanLeft = "1";  // 왼쪽으로 쏠렸다.
+    private static final String leanRight = "2";  // 오른쪽으로 쏠렸다.
+    private static final String front = "3";  // 상체가 앞으로 쏠렸다
+    private static final String back = "4";  // 상체가 뒤로 쏠렸다.
+    private static final String hipFront = "5";  // 엉덩이를 앞으로 뺐다.
+    private static final String crossRightLeg = "6";  // 오른쪽 다리를 왼쪽으로 꼬았다.
+    private static final String crossLeftLeg = "7";  // 왼쪽 다리를 오른쪽으로 꼬았다.
+
     private static final String TAG = "Tab3";
     private Messenger mRemote;  // 블루투스 서비스로부터 받아오는 메시지. 실시간 자세를 받아오기 위해서
     BluetoothSPP bt;
@@ -78,33 +88,33 @@ public class Tab3 extends Fragment {
 
                     position2.setText(msg.obj.toString() + "번 자세입니다");
                     switch(msg.obj.toString()){
-                        case "0":
+                        case standard:
                             position.setImageDrawable(getResources().getDrawable(R.drawable.status_realtime_good));
                             position2.setText("정자세");
                             break;
-                        case "1":
+                        case leanLeft:
                             position.setImageDrawable(getResources().getDrawable(R.drawable.status_realtime_left));
                             position2.setText("왼쪽쏠림");
                             break;
-                        case "2":
+                        case leanRight:
                             position.setImageDrawable(getResources().getDrawable(R.drawable.status_realtime_right));
                             position2.setText("오른쪽쏠림");
                             break;
-                        case "3":
+                        case front:
                             position.setImageDrawable(getResources().getDrawable(R.drawable.status_realtime_front));
                             position2.setText("앞으로쏠림");
                             break;
-                        case "4":
+                        case back:
                             position.setImageDrawable(getResources().getDrawable(R.drawable.status_realtime_back));
                             position2.setText("뒤로쏠림");
                             break;
-                        case "5":
+                        case hipFront:
                             position2.setText("엉덩이 앞으로 뺌");
                             break;
-                        case "6":
+                        case crossLeftLeg:
                             position2.setText("왼쪽으로 다리 꼼");
                             break;
-                        case "7":
+                        case crossRightLeg:
                             position2.setText("오른쪽으로 다리 꼼");
                             break;
                     }

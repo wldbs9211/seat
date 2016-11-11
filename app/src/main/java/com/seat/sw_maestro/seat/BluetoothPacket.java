@@ -231,7 +231,7 @@ public class BluetoothPacket {
         Calendar calendar = Calendar.getInstance(); // 현재시간
 
         // 시간 테스트 꼭 지울것
-        //calendar.add(Calendar.MINUTE, +30);
+        calendar.add(Calendar.MINUTE, +48);
 
         int year = calendar.get(Calendar.YEAR);
         year = year - 2000; // 2016년 -> 16만 보낸다
