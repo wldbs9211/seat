@@ -38,13 +38,28 @@ import app.akexorcist.bluetotohspp.library.BluetoothState;
 */
 
 public class BluetoothService extends Service {
+    // 자세별 코드
+    private static final int standard = 0;  // 정자세
+    private static final int leanLeft = 1;  // 왼쪽으로 쏠렸다.
+    private static final int leanRight = 2;  // 오른쪽으로 쏠렸다.
+    private static final int front = 3;  // 상체가 앞으로 쏠렸다
+    private static final int back = 4;  // 상체가 뒤로 쏠렸다.
+    private static final int hipFront = 5;  // 엉덩이를 앞으로 뺐다.
+    private static final int crossRightLeg = 6;  // 오른쪽 다리를 왼쪽으로 꼬았다.
+    private static final int crossLeftLeg = 7;  // 왼쪽 다리를 오른쪽으로 꼬았다.
 
-    int packet_count = 0;
+    // 자세별 중심점 그룹
+    Centroid centroid0; // 정자세
+    Centroid centroid1; // 왼쪽
+    Centroid centroid2; // 오른쪽
+    Centroid centroid3; // 앞쪽
+    Centroid centroid4; // 뒤쪽
+    Centroid centroid5; // 엉덩이 앞쪽
 
     private static final String TAG = "BluetoothService";
     private static final String SeatName = "seat";    // 방석의 블루투스 이름을 입력한다.
-    private static final int commonModeInterval = 10000; // 일반모드 실행주기
-    private static final int realTimeModeInterval = 500;   // 실시간모드 실행주기
+    private static final int commonModeInterval = 300000; // 일반모드 실행주기
+    private static final int realTimeModeInterval = 1000;   // 실시간모드 실행주기
     private static final int tab1ModeInterval = 3000;   // 방석연결상태 실행주기
 
     BluetoothSPP bt;
@@ -56,14 +71,6 @@ public class BluetoothService extends Service {
     private static final int STATE_COMMON = 0;  // 일반모드
     private static final int STATE_TAB1 = 1;    // Tab1을 보는 상태
     private static final int STATE_TAB3 = 2;    // Tab3를 보는 상태
-
-    Centroid centroid0;
-    Centroid centroid1;
-    Centroid centroid2;
-    Centroid centroid3;
-    Centroid centroid4;
-    Centroid centroid5;
-
 
     // 생성자
     BluetoothService(){
@@ -180,36 +187,6 @@ public class BluetoothService extends Service {
 
                     timer = new Timer();
                     timer.schedule(timerTask_Tab3, 1000, realTimeModeInterval); // Tab3전용 task(방석에 실시간 데이터 요청)를 1초 후 1초마다 실행
-
-                    Log.d(TAG, "실시간용 리스너를 등록한다.");
-
-                    /*
-                    // 블루투스 리스너 실시간용
-                    bt.setOnDataReceivedListener(new BluetoothSPP.OnDataReceivedListener() {
-                        public void onDataReceived(byte[] data, String message) {
-                            // Do something when data incoming
-                            Log.d(TAG, "실시간용 데이터 받았다 -> " + message);
-
-                            //Toast.makeText(getApplicationContext(), "데이터를 받았다.", Toast.LENGTH_SHORT).show();
-                            //bt.send("1",true);
-
-                            /*
-                            String[] input_string = new String[11];
-                            input_string = message.split(",");
-
-                            int positionResult = guessPosition(input_string);   // 자세 결과 추측
-
-                            if (bt != null && bt.getServiceState() == 3)   // 3이면 블루투스에서 연결상태임
-                                remoteSendMessage_Tab3(String.valueOf(positionResult)); // 자세의 결과를 보냄
-                            else
-                                remoteSendMessage_Tab3("-1");   // 블루투스 연결이 안되어있음
-                            */
-                    /*
-                        }
-                    });
-                    */
-
-
                     break;
 
                 case 2 :    // Tab1이 화면에서 사라짐
@@ -280,18 +257,8 @@ public class BluetoothService extends Service {
             public void onDataReceived(byte[] data, String message) {
                 // Do something when data incoming
                 Log.d(TAG, "블루투스 데이터 받았다 -> " + message);
-                //Log.d(TAG, "받은 데이터 길이 : " + data.length);
-                    /*
-                    for(int i = 0; i < data.length ; i++){
-                    //Log.d(TAG, "" + data[i]);
-                    String binary = String.format("%8s", Integer.toBinaryString(data[i] & 0xFF)).replace(' ', '0');
-                    Log.d(TAG, "data[" + i + "] : " + binary );
-                }
-                */
-                bluetoothPacket.decodePacket(data);
-
-                packet_count++;
-                Log.d(TAG, "받은 패킷 개수 : " + packet_count);
+                bluetoothPacket.decodePacket(data); // 패킷을 디코딩한다.
+                processPacket(bluetoothPacket);
             }
         });
 
@@ -362,47 +329,87 @@ public class BluetoothService extends Service {
         return minIndex;
     }
 
-    public int guessPosition(String[] input_string){
-        // 블루투스로 오는 정보는 0~8번은 셀 값, 9~10번은 좌표가 들어온다.
+    /*
+        디코딩된 패킷을 이용해서 이제 그 후 작업을 한다.// 디코딩된 패킷을 이용해서 이제 그 후 작업을 한다.
+        일반모드라면 디코딩된 패킷의 값을 이용하여 자세를 추측하고 디비에 넣는다.
+        실시간모드라면 자세를 추측하고 Tab3에 자세의 결과를 보내준다.
+     */
+    public void processPacket(BluetoothPacket decodedPacket){
+        if(decodedPacket.getMode() == 1){
+            Log.d(TAG, "일반모드 처리");
+            int guessedPosition = guessPosition(decodedPacket.getValue(),decodedPacket.getPosition());  // 자세추측
+            int accuracy = makeScore(guessedPosition);  // 추측된 자세의 정확도를 얻음
 
-        int[] input_int = new int[9];
-        float[] input_float = new float[2];    // string을 float로
+            // 디비에 넣기 위해
+            DatabaseManager databaseManager = new DatabaseManager(getApplicationContext());
+            databaseManager.insertData(decodedPacket.getDataHour(),1,accuracy,decodedPacket.getDataDate());
 
-        // 셀 값
-        for(int i = 0; i < 9; i++){
-            input_int[i] = Integer.parseInt(input_string[i]);
+            Log.d("databaseTest", "데이터베이스에 다음과 같은 값을 넣었습니다.");
+            Log.d("databaseTest", "타임라인 : " + decodedPacket.getDataHour());
+            Log.d("databaseTest", "앉은시간 추가 : " + 1);
+            Log.d("databaseTest", "정확도 : " + accuracy);
+            Log.d("databaseTest", "날짜 : " + decodedPacket.getDataDate());
+
+        } else if(decodedPacket.getMode() == 2){
+            Log.d(TAG, "실시간모드 처리");
+            int guessedPosition = guessPosition(decodedPacket.getValue(),decodedPacket.getPosition());
+            if (bt != null && bt.getServiceState() == 3)   // 3이면 블루투스 연결상태
+                remoteSendMessage_Tab3(String.valueOf(guessedPosition)); // 자세의 결과를 Tab3로 보냄
+            else
+                remoteSendMessage_Tab3("-1");   // 블루투스 연결이 안되어있음
         }
+    }
 
-        // k-means 관련(좌표)
-        input_float[0] = Float.valueOf(input_string[9])/100;
-        input_float[1] = Float.valueOf(input_string[10])/100;
+    /*
+    input : 9개의 셀에서 나온 값, x.y좌표
+    output : 추측해서 나온 자세코드
+    동작 : 9개의 cell 값과 2개의 x,y 좌표를 이용해서 자세를 추측한 후 자세에 맞는 번호를 리턴한다.
+     */
+    public int guessPosition(int[] cellValue, double[] positionValue){
 
-        Log.d(TAG, "(" + input_float[0] + " , " + input_float[1] + ")");
-
-        // k-means
         double[] positionProbability = new double[6];
-        positionProbability[0] = centroid0.getDistance(input_float[0],input_float[1]);  // 정자세
-        positionProbability[1] = centroid1.getDistance(input_float[0],input_float[1]);  // 왼쪽
-        positionProbability[2] = centroid2.getDistance(input_float[0],input_float[1]);  // 오른쪽
-        positionProbability[3] = centroid3.getDistance(input_float[0],input_float[1]);  // 상체 앞으로
-        positionProbability[4] = centroid4.getDistance(input_float[0],input_float[1]);  // 상체 뒤로
-        positionProbability[5] = centroid5.getDistance(input_float[0],input_float[1]);  // 엉덩이 앞으로
+        positionProbability[standard] = centroid0.getDistance(positionValue[0],positionValue[1]);  // 정자세
+        positionProbability[leanLeft] = centroid1.getDistance(positionValue[0],positionValue[1]);  // 왼쪽
+        positionProbability[leanRight] = centroid2.getDistance(positionValue[0],positionValue[1]);  // 오른쪽
+        positionProbability[front] = centroid3.getDistance(positionValue[0],positionValue[1]);  // 상체 앞으로
+        positionProbability[back] = centroid4.getDistance(positionValue[0],positionValue[1]);  // 상체 뒤로
+        positionProbability[hipFront] = centroid5.getDistance(positionValue[0],positionValue[1]);  // 엉덩이 앞으로
 
-        Log.d(TAG,"정자세" + positionProbability[0]);
-        Log.d(TAG,"왼쪽" + positionProbability[1]);
-        Log.d(TAG,"오른쪽" + positionProbability[2]);
-        Log.d(TAG,"상체앞" + positionProbability[3]);
-        Log.d(TAG,"상체뒤" + positionProbability[4]);
-        Log.d(TAG,"엉덩이 앞" + positionProbability[5]);
+        Log.d(TAG,"정자세" + positionProbability[standard]);
+        Log.d(TAG,"왼쪽" + positionProbability[leanLeft]);
+        Log.d(TAG,"오른쪽" + positionProbability[leanRight]);
+        Log.d(TAG,"상체앞" + positionProbability[front]);
+        Log.d(TAG,"상체뒤" + positionProbability[back]);
+        Log.d(TAG,"엉덩이 앞" + positionProbability[hipFront]);
 
         int positionResult = getMinIndex(positionProbability);
 
-        if(positionResult == 1 && input_int[2] <= 5){   // 왼쪽으로 쏠린 자세인데, 오른쪽 앞 부분이 안눌렸다 -> 다리를 꼬았음
-            return 6;
-        }else if(positionResult == 2 && input_int[0] <= 5){ // 오른쪽으로 쏠린 자세인데, 왼쪽 앞 부분이 비었다 -> 다리를 꼬았음
-            return 7;
+        if(positionResult == leanLeft && cellValue[2] <= 10){   // 왼쪽으로 쏠린 자세인데, 오른쪽 앞 부분이 안눌렸다 -> 오른쪽 다리를 꼬았음
+            return crossRightLeg;
+        }else if(positionResult == leanRight && cellValue[0] <= 10){ // 오른쪽으로 쏠린 자세인데, 왼쪽 앞 부분이 비었다 -> 왼쪽 다리를 꼬았음
+            return crossLeftLeg;
         }else {
             return positionResult;
         }
+    }
+
+    /*
+    input : 자세코드
+    output : 자세점수
+    동작 : 자세를 입력받아서 그에 맞는 자세별 점수를 리턴한다.
+     */
+    public int makeScore(int position){
+        int score = 0;
+        switch(position){
+            case standard : score = 100; break;
+            case leanLeft : score = 80; break;
+            case leanRight: score = 80; break;
+            case front : score = 80; break;
+            case back : score = 80; break;
+            case hipFront : score = 40; break;
+            case crossRightLeg : score = 30; break;
+            case crossLeftLeg : score = 30; break;
+        }
+        return score;
     }
 }

@@ -11,9 +11,12 @@ import java.util.Calendar;
 public class BluetoothPacket {
     final static String TAG = "BluetoothPacket";
 
+    final static int commonMode_int = 1;
+    final static int realTimeMode_int = 2;
+
     final static byte startByte = (byte)0xFF;   // 시작 알림 바이트
     final static byte endByte = (byte)0xFE;     // 끝 알림 바이트
-    final static byte commonLengthByte = (byte)0x07;    // 일반모드 길이
+    final static byte commonLengthByte = (byte)0x08;    // 일반모드 길이
     final static byte realTimeLengthByte = (byte)0x02;  // 실시간모드 길이
     final static byte commonMode = (byte)0x01;  // 일반모드 뜻함
     final static byte realTimeMode = (byte)0x02;  // 실시간모드 뜻함
@@ -29,25 +32,58 @@ public class BluetoothPacket {
     final static int lengthSize = 1;
 
     // 데이터 타입별 변수
-    int mode;
-    int[] date = new int[dateSize];
-    int[] value = new int[valueSize];
-    int[] position = new int[positionSize];
+    int mode_int;
+    int[] date_int = new int[dateSize]; // yy mm dd hh
+    int[] value_int = new int[valueSize];
+    double[] position_double = new double[positionSize];
+    int length_int;
 
-    // 데이터 타입별 변수 temp
-    String mode2;
-    String[] date2 = new String[dateSize];
-    String[] value2 = new String[valueSize];
-    String[] position2 = new String[positionSize];
+    // 데이터 타입별 변수
+    String mode_string;
+    String[] date_string = new String[dateSize];
+    String[] value_string = new String[valueSize];
+    String[] position_string = new String[positionSize];
+    String length_string;
 
     BluetoothPacket(){
 
+    }
+
+    int getMode(){
+        return mode_int;
+    }
+
+    int[] getDate(){
+        return date_int;
+    }
+
+    String getDataDate(){   // 리턴 예) String "20161102"
+        return "20" + date_string[0] + date_string[1] + date_string[2];
+    }
+
+    String getDataHour(){   // 데이터의 시간 리턴
+        return date_string[3];
+    }
+
+    int[] getValue(){
+        return value_int;
+    }
+
+    double[] getPosition(){
+        return position_double;
+    }
+
+    int getLength(){
+        return length_int;
     }
 
     void decodePacket(byte[] inputPacket){
         Log.d(TAG, "패킷을 이제 디코딩한다.");
 
         if((inputPacket[0] == startByte) && (inputPacket[inputPacket.length-1] == endByte)){    // 정상 패킷 검사 1(Start,End 검사)
+            // start와 end 부분은 버린다. 공백으로 바꾼다.
+            inputPacket[0] = 0x30;
+            inputPacket[inputPacket.length-1] = 0x30;
 
             // Byte를 String으로 일단 바꿔줍니다.
             String packetToString = "";
@@ -62,6 +98,125 @@ public class BluetoothPacket {
             String[] splitedIntoPart;
             splitedIntoPart = packetToString.split("~");
 
+            // 그 안에 데이터는 ',' 기준으로 또 나눈다.
+            mode_string = splitedIntoPart[0];
+            mode_int = StringToInt(mode_string);
+
+            //Log.d(TAG, "모드 값 : " + mode_int);
+            switch(mode_int) {
+                case commonMode_int :
+                    Log.d(TAG, "일반모드 패킷 분석");
+
+                    date_string = splitedIntoPart[1].split(",");
+                    for(int i = 0; i < date_string.length; i++){
+                        date_int[i] = StringToInt(date_string[i]);
+                    }
+
+                    value_string = splitedIntoPart[2].split(",");
+                    for(int i = 0; i < value_string.length; i++){
+                        value_int[i] = StringToInt(value_string[i]);
+                    }
+
+                    position_string = splitedIntoPart[3].split(",");
+                    for(int i = 0; i < position_string.length; i++){
+                        if(position_string[i].charAt(0) == '+'){
+                            //Log.d(TAG, "양수");
+                            position_string[i] = position_string[i].replace('+', '0');
+                            //Log.d(TAG, "+ 없애기 테스트 : " + position_string[i]);
+                            int positionTemp_int = StringToInt(position_string[i]);
+                            position_double[i] = positionTemp_int/100;
+
+                        }else if(position_string[i].charAt(0) == '-') {
+                            //Log.d(TAG, "음수");
+                            position_string[i] = position_string[i].replace('-', '0');
+                            //Log.d(TAG, "- 없애기 테스트 : " + position_string[i]);
+                            int positionTemp_int = StringToInt(position_string[i]);
+                            position_double[i] = positionTemp_int/100 * -1;
+                        }
+                    }
+
+                    length_string = splitedIntoPart[4];
+                    length_int = StringToInt(length_string);
+                    length_int = length_int / 10;   // 10으로 나눈 이유는 end byte를 0으로 바꿔서 실제 길이에 10이 곱해진다. 따라서 나눔
+
+
+
+                    // 테스트 출력
+                    //Log.d(TAG, "모드 : " + mode_string);
+                    Log.d(TAG, "모드 : " + mode_int);
+
+                    Log.d(TAG, "날짜 차례대로 연월일시간");
+                    for (int i = 0; i < date_string.length; i++) {
+                        //Log.d(TAG, date_string[i]);
+                        Log.d(TAG, "" + date_int[i]);
+                    }
+
+                    Log.d(TAG, "셀값 ");
+                    for (int i = 0; i < value_string.length; i++) {
+                        //Log.d(TAG, value_string[i]);
+                        Log.d(TAG, "" + value_int[i]);
+                    }
+
+                    // Log.d(TAG, "좌표값 : " + position_string[0] + " , " + position_string[1]);
+                    Log.d(TAG, "좌표값 : " + position_double[0] + " , " + position_double[1]);
+
+                    //Log.d(TAG, "길이 값 : " + length_string);
+                    Log.d(TAG, "길이 값 : " + length_int);
+
+
+                    break;
+
+                case realTimeMode_int :
+                    Log.d(TAG, "실시간모드 패킷 분석");
+
+                    value_string = splitedIntoPart[1].split(",");
+                    for(int i = 0; i < value_string.length; i++){
+                        value_int[i] = StringToInt(value_string[i]);
+                    }
+
+                    position_string = splitedIntoPart[2].split(",");
+                    for(int i = 0; i < position_string.length; i++){
+                        if(position_string[i].charAt(0) == '+'){
+                            //Log.d(TAG, "양수");
+                            position_string[i] = position_string[i].replace('+', '0');
+                            //Log.d(TAG, "+ 없애기 테스트 : " + position_string[i]);
+                            int positionTemp_int = StringToInt(position_string[i]);
+                            position_double[i] = positionTemp_int/100;
+
+                        }else if(position_string[i].charAt(0) == '-') {
+                            //Log.d(TAG, "음수");
+                            position_string[i] = position_string[i].replace('-', '0');
+                            //Log.d(TAG, "- 없애기 테스트 : " + position_string[i]);
+                            int positionTemp_int = StringToInt(position_string[i]);
+                            position_double[i] = positionTemp_int/100 * -1;
+                        }
+                    }
+
+                    length_string = splitedIntoPart[3];
+                    length_int = StringToInt(length_string);
+                    length_int = length_int / 10;   // 10으로 나눈 이유는 end byte를 0으로 바꿔서 실제 길이에 10이 곱해진다. 따라서 나눔
+
+
+                    // 테스트 출력
+                    //Log.d(TAG, "모드 : " + mode_string);
+                    Log.d(TAG, "모드 : " + mode_int);
+
+                    Log.d(TAG, "셀값 ");
+                    for (int i = 0; i < value_string.length; i++) {
+                        //Log.d(TAG, value_string[i]);
+                        Log.d(TAG, "" + value_int[i]);
+                    }
+
+                    // Log.d(TAG, "좌표값 : " + position_string[0] + " , " + position_string[1]);
+                    Log.d(TAG, "좌표값 : " + position_double[0] + " , " + position_double[1]);
+
+                    //Log.d(TAG, "길이 값 : " + length_string);
+                    Log.d(TAG, "길이 값 : " + length_int);
+
+
+                    break;
+            }
+
         }else{
             Log.d(TAG, "버리는 패킷임");
         }
@@ -69,11 +224,14 @@ public class BluetoothPacket {
 
     byte[] makeCommonModePacket(){  // 일반모드용 요청 패킷
         /* 패킷의 구성
-        | Start(0xFF) | Mode(0x01) | YY MM DD hh mm | Length(0x07) | End(0xFE) |
-        1, 1, 5, 1, 1 바이트씩 총 9Byte 크기의 패킷
+        | Start(0xFF) | Mode(0x01) | YY MM DD hh mm ss | Length(0x08) | End(0xFE) |
+        1, 1, 6, 1, 1 바이트씩 총 10Byte 크기의 패킷
          */
 
         Calendar calendar = Calendar.getInstance(); // 현재시간
+
+        // 시간 테스트 꼭 지울것
+        //calendar.add(Calendar.MINUTE, +30);
 
         int year = calendar.get(Calendar.YEAR);
         year = year - 2000; // 2016년 -> 16만 보낸다
@@ -90,7 +248,9 @@ public class BluetoothPacket {
 
         int minute = calendar.get(Calendar.MINUTE);
 
-        byte[] commonModePacket = new byte[9];
+        int second = calendar.get(Calendar.SECOND);
+
+        byte[] commonModePacket = new byte[10];
 
         commonModePacket[0] = startByte;
         commonModePacket[1] = commonMode;
@@ -99,8 +259,9 @@ public class BluetoothPacket {
         commonModePacket[4] = (byte)day;
         commonModePacket[5] = (byte)hour;
         commonModePacket[6] = (byte)minute;
-        commonModePacket[7] = commonLengthByte;
-        commonModePacket[8] = endByte;
+        commonModePacket[7] = (byte)second;
+        commonModePacket[8] = commonLengthByte;
+        commonModePacket[9] = endByte;
 
         Log.d(TAG, "일반모드 패킷 생성");
         return commonModePacket;
@@ -121,5 +282,9 @@ public class BluetoothPacket {
 
         Log.d(TAG, "실시간모드 패킷 생성");
         return commonModePacket;
+    }
+
+    int StringToInt(String stringData){
+        return Integer.parseInt(stringData);
     }
 }

@@ -70,9 +70,6 @@ public class AlarmReceiver extends BroadcastReceiver {
         String timeLine;
         String date;
 
-        // 테스트용 나중에 지워
-        databaseManager.insertData(databaseManager.getCurrentHour(),calendar.get(Calendar.MINUTE),calendar.get(Calendar.HOUR),databaseManager.getCurrentDay());
-
         //calendar.set(2016, 10, 1, 00, 34, 56);  // 테스트용
         //Log.d(TAG, "현재 날짜 : " + calendar.getTime());
 
