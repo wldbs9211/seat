@@ -10,13 +10,12 @@
             android:title="그래프 표현 방식 변경"/>
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="@string/pref_update_setting">
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="prefSendReport"
-            android:summary="@string/pref_send_report_summary"
-            android:title="@string/pref_send_report" >
-        </CheckBoxPreference>
+    <PreferenceCategory android:title="개발자 모드">
+        <Preference
+            android:key="prefOpenTestApp"
+            android:summary="Bluetooth Test 등을 위한 앱을 실행시킵니다."
+            android:title="테스트 앱 실행">
+        </Preference>
     </PreferenceCategory>
 
 </PreferenceScreen>

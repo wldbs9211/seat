@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "com.seat.sw_maestro.seat"
-        minSdkVersion 16
+        minSdkVersion 18
         targetSdkVersion 24
         versionCode 1
         versionName "1.0"
@@ -18,6 +18,7 @@ android {
         }
     }
 }
+
 
 repositories {  // 페북 연동..
     jcenter()       // This is the default repo
@@ -34,4 +35,5 @@ dependencies {
     compile 'com.github.PhilJay:MPAndroidChart:v2.1.6' // 그래프 위해서 추가
     compile 'com.github.rey5137:material:1.2.1' // 옆으로 쓸어넘기기
     compile 'com.akexorcist:bluetoothspp:1.0.0' // 블루투스
+    compile "com.polidea.rxandroidble:rxandroidble:1.0.2" // BLE
 }

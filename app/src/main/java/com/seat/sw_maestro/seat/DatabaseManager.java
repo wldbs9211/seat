@@ -489,3 +489,26 @@ public class DatabaseManager {
         return accuracy_Month/count;
     }
 }
+
+/*
+        // 데이터베이스 테스트
+        DatabaseManager databaseManager = new DatabaseManager(this);
+
+        String date = databaseManager.getCurrentDay();  // 현재의 날짜. 타입 -yyyyMMdd
+        String timeLine = databaseManager.getCurrentHour(); // 현재의 시간. 타입 - HH
+        // 데이터 추가하기
+        databaseManager.insertData(timeLine, 10, 20, date);    // 인자로 현재 시간, 앉은시간(분), 정확도(퍼센트 인트), 현재날짜
+        databaseManager.insertData(timeLine, 20, 30, date);    // 인자로 현재 시간, 앉은시간(분), 정확도(퍼센트 인트), 현재날짜
+        databaseManager.insertData(timeLine, 40, 50, date);    // 인자로 현재 시간, 앉은시간(분), 정확도(퍼센트 인트), 현재날짜
+        databaseManager.insertData(timeLine, 50, 60, date);    // 인자로 현재 시간, 앉은시간(분), 정확도(퍼센트 인트), 현재날짜
+
+        databaseManager.insertData("18", 10, 20, "20161017");    // 인자로 현재 시간, 앉은시간(분), 정확도(퍼센트 인트), 현재날짜
+        databaseManager.insertData("18", 20, 30, "20161017");    // 인자로 현재 시간, 앉은시간(분), 정확도(퍼센트 인트), 현재날짜
+        databaseManager.insertData("19", 40, 50, "20161017");    // 인자로 현재 시간, 앉은시간(분), 정확도(퍼센트 인트), 현재날짜
+        databaseManager.insertData("20", 50, 60, "20161017");    // 인자로 현재 시간, 앉은시간(분), 정확도(퍼센트 인트), 현재날짜
+        */
+
+//SharedPreferences queue_accuracy = getSharedPreferences("accuracy", MODE_PRIVATE);
+//Log.d(TAG, "테스트 : " + queue_accuracy.getInt("1",-1));
+//DatabaseManager databaseManager = new DatabaseManager(this);
+//Log.d(TAG, "테스트2 : " + databaseManager.getAccuracy("19","20161018"));

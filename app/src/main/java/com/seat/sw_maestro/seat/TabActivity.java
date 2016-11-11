@@ -135,8 +135,8 @@ public class TabActivity extends AppCompatActivity {
 
                     // 기존의 방식. 바인드 할 시기를 놓쳐서 제대로 보여주지 못함.
                     //Log.d(TAG,"블루투스 서비스를 부른다");
-                    //Intent bluetoothService = new Intent(getApplicationContext(), BluetoothService.class);
-                    //startService(bluetoothService);
+                    Intent bluetoothService = new Intent(getApplicationContext(), BluetoothService.class);
+                    startService(bluetoothService);
                 } else {
                     startActivity(new Intent(getApplicationContext(), Tutorial1Activity.class));  // 튜토리얼로 다시 이동
                     finish();   // 끝내기

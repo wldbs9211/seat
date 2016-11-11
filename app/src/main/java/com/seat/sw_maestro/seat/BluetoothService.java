@@ -22,14 +22,11 @@ import app.akexorcist.bluetotohspp.library.BluetoothState;
 /*
     이 서비스에서는 주기적으로 방석으로 데이터를 보낸다. (실시간모드 or 일반모드)
     각 모드가 보내지는 경우는 다음과 같다.
-
     방석상태모드 - 사용자가 Tab1(방석연결상태)을 보고 있을 때
     실시간모드 - 사용자가 Tab3(실시간)을 보고 있을 때
     일반모드 - 그 외의 경우
-
     실시간모드는 방석에 실시간모드용 데이터 요청을 하며, 일반모드는 일반모드용 데이터 요청을 한다.
     실시간모드의 경우에는 방석의 데이터를 실시간으로 받으며, 일반모드에는 쌓인 데이터가 있는 경우라면 쌓인 데이터를 받고, 없는 경우라면 받은 당시 데이터 받음.
-
     받아온 데이터는 DB에 저장되어야하는데 일반모드의 경우에는 1(변경가능)분에 한 번씩 데이터를 요청하며, 그때마다 DB에 넣고 정확도와 시간을 재계산한다.
     정산의 내용은 다음과 같다.
     몇 번 데이터를 받았는지 카운트하여, 1시간동안 몇 분을 앉아있었는지 체크한다.
@@ -58,7 +55,7 @@ public class BluetoothService extends Service {
 
     private static final String TAG = "BluetoothService";
     private static final String SeatName = "seat";    // 방석의 블루투스 이름을 입력한다.
-    private static final int commonModeInterval = 300000; // 일반모드 실행주기
+    private static final int commonModeInterval = 10000; // 일반모드 실행주기
     private static final int realTimeModeInterval = 1000;   // 실시간모드 실행주기
     private static final int tab1ModeInterval = 3000;   // 방석연결상태 실행주기
 
