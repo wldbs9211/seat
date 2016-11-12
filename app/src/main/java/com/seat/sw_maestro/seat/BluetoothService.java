@@ -35,6 +35,8 @@ import app.akexorcist.bluetotohspp.library.BluetoothState;
 */
 
 public class BluetoothService extends Service {
+    int globalStartId;
+
     // 자세별 코드
     private static final int standard = 0;  // 정자세
     private static final int leanLeft = 1;  // 왼쪽으로 쏠렸다.
@@ -72,6 +74,13 @@ public class BluetoothService extends Service {
     // 생성자
     BluetoothService(){
 
+    }
+
+    public void onStart(Intent intent, int startId)
+    {
+        Log.d(TAG, "시작 아이디 : " + startId);
+        globalStartId = startId;
+        super.onStart(intent, startId);
     }
 
     @Override
@@ -223,6 +232,12 @@ public class BluetoothService extends Service {
                     }
                     break;
 
+                case 4: // 테스트 앱을 실행시켰다는 메시지. 서비스를 중단해야함.
+
+                    Log.d(TAG, "서비스를 중단합니다.");
+                    // 여기에 무슨 코드가 들어가야할까 ㅠㅠㅠ
+
+                    break;
                 default :
                     Log.d(TAG, "등록되지 않은 곳에서 메시지가 옴");
                     break;

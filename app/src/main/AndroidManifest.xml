@@ -44,7 +44,14 @@
         <activity android:name=".Tutorial2Activity" />
         <activity android:name=".Tutorial3Activity" />
         <receiver android:name=".AlarmReceiver" />  <!-- 알람 리시버 -->
-        <service android:name=".BluetoothService" />    <!-- 블루투스 서비스 -->
+
+        <!-- 블루투스 서비스 -->
+        <service
+            android:name=".BluetoothService">
+            <intent-fileter>
+                <action android:name="com.seat.sw_maestro.seat.stopService"/>
+            </intent-fileter>
+        </service>
 
     </application>
 

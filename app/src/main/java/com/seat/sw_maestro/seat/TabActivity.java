@@ -34,7 +34,7 @@ public class TabActivity extends AppCompatActivity {
     // 넘어가도 된다면 BluetoothService를 호출한다.
 
     private static final String TAG = "TabActivity";
-    private static final String SeatName = "seat";    // 방석의 블루투스 이름을 입력한다.
+    private static final String SeatName = "HMSoft";    // 방석의 블루투스 이름을 입력한다.
 
     @Override
     public void onDestroy() {

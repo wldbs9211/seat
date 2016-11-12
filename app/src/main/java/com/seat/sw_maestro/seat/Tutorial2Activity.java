@@ -34,7 +34,7 @@ public class Tutorial2Activity extends AppCompatActivity {
     Button buttonConnect;
     BluetoothSPP bt; // 블루투스
     private static final String TAG = "Tutorial2Activity";
-    private static final String SeatName = "seat";    // 방석의 블루투스 이름을 입력한다.
+    private static final String SeatName = "HMSoft";    // 방석의 블루투스 이름을 입력한다.
 
     @Override
     protected void onDestroy() {
@@ -70,6 +70,7 @@ public class Tutorial2Activity extends AppCompatActivity {
                     finish();   // 끝내기
                 }
                 else {  // 연결중이 아니라면서 새롭게 연결
+                    Log.d(TAG, "블루투스 연결 리스트에 없습니다.");
                     if (!bt.isBluetoothAvailable()) {    // 블루투스 자체를 지원 안함. 가능성이 거의 없겠지?
                         Toast.makeText(getApplicationContext(), "블루투스가 가능한 기기가 아닙니다.", Toast.LENGTH_LONG).show();
                     } else {  // 블루투스는 됨
