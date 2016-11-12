@@ -1,5 +1,6 @@
 package com.seat.sw_maestro.seat;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -19,6 +20,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 public class SettingActivity extends PreferenceActivity {
+    public static Activity SettingActivity;
 
     private static final String TAG = "SettingActivity";
     private static final String testAppName = "kr.wonjun.somatest";
@@ -29,6 +31,7 @@ public class SettingActivity extends PreferenceActivity {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.setting);
         Log.d(TAG, "SettingActivity");
+        SettingActivity = this;
 
         Toast.makeText(getApplicationContext(), "일부 설정은 앱을 재시작하면 적용됩니다.", Toast.LENGTH_LONG).show();
 
@@ -48,7 +51,6 @@ public class SettingActivity extends PreferenceActivity {
                     // 테스트 앱을 실행시키고, 서비스에게는 서비스를 중단하라고 메시지를 보낸다.
                     Intent serviceIntent = new Intent(getApplicationContext(), BluetoothService.class);
                     getApplication().bindService(serviceIntent, mConnection, Context.BIND_AUTO_CREATE);
-
 
                 }else{
                     Toast.makeText(getApplicationContext(), "테스트 앱이 존재하지 않습니다.", Toast.LENGTH_LONG).show();

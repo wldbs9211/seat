@@ -35,7 +35,6 @@ import app.akexorcist.bluetotohspp.library.BluetoothState;
 */
 
 public class BluetoothService extends Service {
-    int globalStartId;
 
     // 자세별 코드
     private static final int standard = 0;  // 정자세
@@ -76,10 +75,7 @@ public class BluetoothService extends Service {
 
     }
 
-    public void onStart(Intent intent, int startId)
-    {
-        Log.d(TAG, "시작 아이디 : " + startId);
-        globalStartId = startId;
+    public void onStart(Intent intent, int startId) {
         super.onStart(intent, startId);
     }
 
@@ -138,7 +134,9 @@ public class BluetoothService extends Service {
             TimerTask timerTask_Common = new TimerTask() {
                 public void run() { // 일반모드에서 어떻게 동작하는지
                     Log.d(TAG, "일반모드 요청 패킷 전송");
-                    bt.send(bluetoothPacket.makeCommonModePacket(), false); // 일반모드 요청 패킷을 보낸다.
+                    if(bt != null && bt.getServiceState() == 3) {
+                        bt.send(bluetoothPacket.makeCommonModePacket(), false); // 일반모드 요청 패킷을 보낸다.
+                    }
                 }
             };
 
@@ -162,7 +160,9 @@ public class BluetoothService extends Service {
             TimerTask timerTask_Tab3 = new TimerTask() {
                 public void run() {
                     Log.d(TAG, "TimerTask_Tab3 실행 됨");
-                    bt.send(bluetoothPacket.makeRealTimeModePacket(), false);   // 실시간모드 요청 패킷을 보낸다.
+                    if(bt != null && bt.getServiceState() == 3) {
+                        bt.send(bluetoothPacket.makeRealTimeModePacket(), false);   // 실시간모드 요청 패킷을 보낸다.
+                    }
                 }
             };
 
@@ -233,16 +233,39 @@ public class BluetoothService extends Service {
                     break;
 
                 case 4: // 테스트 앱을 실행시켰다는 메시지. 서비스를 중단해야함.
-
                     Log.d(TAG, "서비스를 중단합니다.");
-                    // 여기에 무슨 코드가 들어가야할까 ㅠㅠㅠ
-
+                    stopService();
                     break;
+
                 default :
                     Log.d(TAG, "등록되지 않은 곳에서 메시지가 옴");
                     break;
             }
         }
+    }
+
+    public void stopService(){
+        // 블루투스 찾는 것 중지
+        if(bt != null){
+            bt.stopService();
+            bt = null;
+        }
+        // 타이머테스크 중지
+        if(timer != null){
+            timer.cancel();
+            timer = null;
+        }
+
+        stopSelf(); // 이 이후에는 프로세스 종료되도 서비스가 다시 살아나지 않음.
+
+        // 앱(액티비티) 죽이기 (SettingActivity와 TabActivity)
+        SettingActivity settingActivity = (SettingActivity)SettingActivity.SettingActivity;
+        TabActivity tabActivity = (TabActivity) TabActivity.TabActivity;
+        if(settingActivity != null) settingActivity.finish();
+        if(tabActivity != null) tabActivity.finish();
+
+        android.os.Process.killProcess(android.os.Process.myPid()); // 서비스 완전 종료
+
     }
 
     @Override
@@ -282,7 +305,9 @@ public class BluetoothService extends Service {
         TimerTask timerTask_Common = new TimerTask() {
             public void run() { // 일반모드에서 어떻게 동작하는지
                 Log.d(TAG, "일반모드 요청 패킷 전송");
-                bt.send(bluetoothPacket.makeCommonModePacket(), false); // 일반모드 요청 패킷을 보낸다.
+                if(bt != null && bt.getServiceState() == 3) {
+                    bt.send(bluetoothPacket.makeCommonModePacket(), false); // 일반모드 요청 패킷을 보낸다.
+                }
             }
         };
 

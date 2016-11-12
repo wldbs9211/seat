@@ -22,6 +22,8 @@ import app.akexorcist.bluetotohspp.library.BluetoothSPP;
 import app.akexorcist.bluetotohspp.library.BluetoothState;
 
 public class TabActivity extends AppCompatActivity {
+    public static Activity TabActivity;
+
     ImageButton buttonSetting;
     Toolbar toolbar;
     ViewPager pager;
@@ -34,7 +36,8 @@ public class TabActivity extends AppCompatActivity {
     // 넘어가도 된다면 BluetoothService를 호출한다.
 
     private static final String TAG = "TabActivity";
-    private static final String SeatName = "HMSoft";    // 방석의 블루투스 이름을 입력한다.
+    private static final String SeatName = "seat";    // 방석의 블루투스 이름을 입력한다.
+    private static final String macAddress = "98:D3:31:FC:3F:27";   // 맥어드레스
 
     @Override
     public void onDestroy() {
@@ -48,6 +51,7 @@ public class TabActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tab);
 
+        TabActivity = this;
         Log.d(TAG,"onCreate");
 
         toolbar = (Toolbar) findViewById(R.id.tool_bar);
@@ -159,8 +163,12 @@ public class TabActivity extends AppCompatActivity {
         if (pairedDevices.size() > 0) {
             for (BluetoothDevice device : pairedDevices) { // 페어링 리스트를 하나씩 비교하며
                 Log.d(TAG,"블루투스 페어링 이름 : " + device.getName());
-                Log.d(TAG,"Seat 이름 : " + seatName);
-                if(device.getName().equals(seatName)) {    // Seat의 이름이 있는지 확인한다.
+                //Log.d(TAG,"Seat 이름 : " + seatName);
+
+                Log.d(TAG,"어드레스" + device.getAddress());
+                seatName = seatName.trim();
+
+                if(device.getName().equals(seatName) || device.getAddress().equals(macAddress)) {    // Seat의 이름이 있는지 확인한다.
                     Log.d(TAG, "일치하는 블루투스 페어링이 존재한다.");
                     isPairedSeat = true;    // 리스트 중 있다면 true로
                 }
