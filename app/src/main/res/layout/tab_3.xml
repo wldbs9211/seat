@@ -4,10 +4,26 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:weightSum="10">
-   <Space
+   <LinearLayout
        android:layout_width="match_parent"
        android:layout_height="0dp"
-       android:layout_weight="1"/>
+       android:layout_weight="1"
+       android:orientation="horizontal"
+       android:weightSum="10">
+      <Space
+          android:layout_width="0dp"
+          android:layout_height="match_parent"
+          android:layout_weight="8.5"/>
+      <ImageButton
+          android:id="@+id/imageButtonQuestion"
+          android:layout_width="0dp"
+          android:layout_height="match_parent"
+          android:layout_weight="1.5"
+          android:src="@drawable/question_icon"
+          android:scaleType="fitXY"
+          android:background="#FFFFFF"
+          />
+   </LinearLayout>
    <ImageView
        android:id="@+id/position"
        android:layout_width="match_parent"

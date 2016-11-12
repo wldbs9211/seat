@@ -43,6 +43,7 @@
         <activity android:name=".Tutorial1Activity" />
         <activity android:name=".Tutorial2Activity" />
         <activity android:name=".Tutorial3Activity" />
+        <activity android:name=".Tutorial4Activity" />
         <receiver android:name=".AlarmReceiver" />  <!-- 알람 리시버 -->
 
         <!-- 블루투스 서비스 -->

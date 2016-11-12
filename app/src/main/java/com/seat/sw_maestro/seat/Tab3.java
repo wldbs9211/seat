@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -41,6 +42,7 @@ public class Tab3 extends Fragment {
 
     TextView position2;
     ImageView position;
+    ImageButton questionButton;
 
     private ServiceConnection mConnection = new ServiceConnection() {   // 서비스와 핸들러를 연결해주는 부분
         @Override
@@ -211,6 +213,7 @@ public class Tab3 extends Fragment {
         bt = new BluetoothSPP(getContext());
         position2 = (TextView)getActivity().findViewById(R.id.position2);
         position = (ImageView)getActivity().findViewById(R.id.position);
+        questionButton = (ImageButton)getActivity().findViewById(R.id.imageButtonQuestion);
 
         // 어떤 자세인지 실시간으로 보여주기 위해서
         // service 연결 시도
@@ -219,6 +222,14 @@ public class Tab3 extends Fragment {
             Intent serviceIntent = new Intent(getContext(), BluetoothService.class);
             getActivity().bindService(serviceIntent, mConnection, Context.BIND_AUTO_CREATE);
         }
+
+        // 튜토리얼4 버튼
+        questionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getContext(), Tutorial4Activity.class));  // 다음으로 이동
+            }
+        });
 
         super.onActivityCreated(savedInstanceState);
     }
