@@ -34,7 +34,7 @@ public class Tutorial2Activity extends AppCompatActivity {
     Button buttonConnect;
     BluetoothSPP bt; // 블루투스
     private static final String TAG = "Tutorial2Activity";
-    private static final String SeatName = "seat";    // 방석의 블루투스 이름을 입력한다.
+    private static final String SeatName = "testtest";    // 방석의 블루투스 이름을 입력한다.
     private static final String macAddress = "98:D3:31:FC:3F:27";   // 맥어드레스
 
     @Override
