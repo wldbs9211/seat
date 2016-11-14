@@ -52,4 +52,6 @@ dependencies {
     compile 'com.github.rey5137:material:1.2.1' // 옆으로 쓸어넘기기
     compile 'com.akexorcist:bluetoothspp:1.0.0' // 블루투스
     compile "com.polidea.rxandroidble:rxandroidble:1.0.2" // BLE
+    compile 'com.robotpajamas.blueteeth:blueteeth:0.2.0'
+    compile 'com.inuker.bluetooth:library:1.1.8'
 }
