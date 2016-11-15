@@ -3,8 +3,11 @@ package com.seat.sw_maestro.seat;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.bluetooth.BluetoothAdapter;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -296,22 +299,7 @@ public class BluetoothService extends Service {
 
     @Override
     public void onCreate() {
-        bluetoothPacket = new BluetoothPacket();    // 블루투스 패킷을 디코딩하기 위한 클래스
-
-        // BLE 관련입니다.
-        rxBleClient = RxBleClient.create(getApplicationContext());
-        device = rxBleClient.getBleDevice(macAddress);  // 디바이스를 얻어옵니다.
-        PublishSubject<Void> disconnectTriggerSubject = PublishSubject.create();
-
-        // 디바이스의 연결을 공유하는 connectionObservable. 이것을 활용해서 나중에 읽기 쓰기를 합니다.
-       connectionObservable = device
-                .establishConnection(getApplicationContext(), true) // 오른쪽 boolean 인자는 자동연결 관련입니다.
-                .observeOn(AndroidSchedulers.mainThread())
-                .takeUntil(disconnectTriggerSubject)
-                .compose(new ConnectionSharingAdapter());
-
-        setBluetoothConnect();  // 블루투스 연결을 실제로 시작
-        setBluetoothRead();     // 블루투스 읽기를 시작
+        Log.d(TAG,"서비스가 시작되었습니다.");
 
         centroid0 = new Centroid(0.79255102,-1.647755102); // 정자세
         centroid1 = new Centroid(-2.389793814,-0.439484536);   // 왼쪽
@@ -320,7 +308,22 @@ public class BluetoothService extends Service {
         centroid4 = new Centroid(0.922626263,-1.468989899); // 뒤로 쏠
         centroid5 = new Centroid(0.2966,4.2344); // 엉덩이 앞으로 뺌
 
-        Log.d(TAG,"서비스가 시작되었습니다.");
+        bluetoothPacket = new BluetoothPacket();    // 블루투스 패킷을 디코딩하기 위한 클래스
+
+        // BLE 관련입니다.
+        rxBleClient = RxBleClient.create(getApplicationContext());
+        device = rxBleClient.getBleDevice(macAddress);  // 디바이스를 얻어옵니다.
+        PublishSubject<Void> disconnectTriggerSubject = PublishSubject.create();
+
+        // 디바이스의 연결을 공유하는 connectionObservable. 이것을 활용해서 나중에 읽기 쓰기를 합니다.
+        connectionObservable = device
+                .establishConnection(getApplicationContext(), true) // 오른쪽 boolean 인자는 자동연결 관련입니다.
+                .observeOn(AndroidSchedulers.mainThread())
+                .takeUntil(disconnectTriggerSubject)
+                .compose(new ConnectionSharingAdapter());
+
+        setBluetoothConnect();  // 블루투스 연결을 실제로 시작
+        setBluetoothRead();     // 블루투스 읽기를 시작
 
         // 서비스가 생성될 때는 TimerTask를 일반모드로 생성한다.
         // 위에 핸들러에도 있는데 여기다 또 만드는 이유는 서비스가 죽었다가 자동으로 살아나는 경우에도 실행될 수 있도록..(안하면 앱을 들어갔다 나와야 실행된다.)
@@ -347,6 +350,11 @@ public class BluetoothService extends Service {
         serviceState = STATE_COMMON;
 
         setAlarm(); // 서비스가 실행될 때 알람을 실행한다. 1시간마다 실행하며 값을 정산해서 서버로 보내는 부분
+
+        // Register for broadcasts on BluetoothAdapter state change
+        IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+        registerReceiver(mReceiver, filter);
+
         super.onCreate();
     }
 
@@ -523,4 +531,30 @@ public class BluetoothService extends Service {
                 );
     }
 
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+
+            if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+                final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
+                        BluetoothAdapter.ERROR);
+                switch (state) {
+                    case BluetoothAdapter.STATE_OFF:
+                        Log.d(TAG, "블루투스 꺼져있음");
+                        break;
+                    case BluetoothAdapter.STATE_TURNING_OFF:
+                        Log.d(TAG, "블루투스 끔");
+                        break;
+                    case BluetoothAdapter.STATE_ON:
+                        Log.d(TAG, "블루투스 켜져있음");
+                        break;
+                    case BluetoothAdapter.STATE_TURNING_ON:
+                        Log.d(TAG, "블루투스 킴");
+
+                        break;
+                }
+            }
+        }
+    };
 }

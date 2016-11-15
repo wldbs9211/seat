@@ -66,6 +66,17 @@ public class Tutorial2Activity extends AppCompatActivity {
             public void onClick(View v) {
                 Log.d(TAG, "블루투스 연결 상태 : " + bt.getServiceState());
 
+                // BLE 버전입니다.
+                if (!bt.isBluetoothEnabled()) { // 블루투스가 꺼져있다면.
+                    Log.d(TAG, "블루투스 켜달라고 인텐트");
+                    Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                    startActivityForResult(intent, BluetoothState.REQUEST_ENABLE_BT);
+                }else{
+                    startActivity(new Intent(getApplicationContext(), Tutorial3Activity.class));  // 다음으로 이동
+                    finish();   // 끝내기
+                }
+
+                /* spp 버전입니다.
                 if(isPairedSeat(SeatName)){  // 페어링 리스트 중에 방석이 있으면 넘어간다. (블루투스가 연결이 되어 있지 않다면 다 false로 나옴)
                     startActivity(new Intent(getApplicationContext(), Tutorial3Activity.class));  // 다음으로 이동
                     finish();   // 끝내기
@@ -86,6 +97,7 @@ public class Tutorial2Activity extends AppCompatActivity {
                         }
                     }
                 }
+                */
             }
         });
 
@@ -136,6 +148,12 @@ public class Tutorial2Activity extends AppCompatActivity {
         } else if(requestCode == BluetoothState.REQUEST_ENABLE_BT) {    // 블루투스 연결해주세요. 인텐트 결과
             if(resultCode == Activity.RESULT_OK) {  // 이 전에는 사용자가 이전에 방석을 연결한 적이 있겠지.
                 Log.d(TAG, "블루투스 요청 후 켰음.");
+
+                // BLE 버전입니다.
+                startActivity(new Intent(getApplicationContext(), Tutorial3Activity.class));  // 다음으로 이동
+                finish();   // 끝내기
+
+                /* spp 버전입니다.
                 if(isPairedSeat(SeatName)){  // 페어링 리스트 중에 방석이 있으면 넘어간다.
                     startActivity(new Intent(getApplicationContext(), Tutorial3Activity.class));  // 다음으로 이동
                     finish();   // 끝내기
@@ -144,6 +162,7 @@ public class Tutorial2Activity extends AppCompatActivity {
                     Intent intent = new Intent(getApplicationContext(), DeviceList.class);
                     startActivityForResult(intent, BluetoothState.REQUEST_CONNECT_DEVICE);
                 }
+                */
             } else {
                 Log.d(TAG, "블루투스 요청 후 취소");
                 Toast.makeText(getApplicationContext(), "블루투스를 연결해야 서비스가 가능합니다.", Toast.LENGTH_LONG).show();

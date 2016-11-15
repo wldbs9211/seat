@@ -109,6 +109,8 @@ public class TabActivity extends AppCompatActivity {
                 Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(intent, BluetoothState.REQUEST_ENABLE_BT);
             } else {    // 블루투스가 켜져있다면.
+
+                /* spp 버전입니다. 페어링 리스트에 존재하나 체크하는 부분
                 if(isPairedSeat(SeatName)){ // 만약 SeatName과 페어링 되어 있다면 튜토리얼을 정상적으로 마침 + 설정에서 제거 안했음.
                     Log.d(TAG,"블루투스 서비스를 부른다");
                     Intent bluetoothService = new Intent(getApplicationContext(), BluetoothService.class);
@@ -117,6 +119,12 @@ public class TabActivity extends AppCompatActivity {
                     startActivity(new Intent(getApplicationContext(), Tutorial1Activity.class));  // 튜토리얼로 다시 이동
                     finish();   // 끝내기
                 }
+                */
+
+                //BLE 버전. 페어링 리스트 체크할 필요가 없다.
+                Log.d(TAG,"블루투스 서비스를 부른다");
+                Intent bluetoothService = new Intent(getApplicationContext(), BluetoothService.class);
+                startService(bluetoothService);
             }
         }
 
@@ -129,6 +137,21 @@ public class TabActivity extends AppCompatActivity {
         if(requestCode == BluetoothState.REQUEST_ENABLE_BT) {    // 블루투스 연결해주세요. 인텐트 결과
             if(resultCode == Activity.RESULT_OK) {
                 Log.d(TAG, "블루투스 요청 후 켰음.");
+
+                // BLE 버전입니다.
+                startActivity(new Intent(getApplicationContext(), TabActivity.class));  // 액티비티 재실행한다.
+                finish();   // 끝내기
+
+                // 이렇게 하는 이유는 Tab1에서 바인드를 해줘야 방석연결 상태를 정확히 보여줌.
+                // Tab1에서는 Tab1이 생성될 때 바인드를 하는데... 요청에서 예를 누른 다음에는 바인드를 할 시기를 놓침.
+                // 따라서 그냥 새로 만들어줘서 처리하는 것으로 함.
+
+                // 기존의 방식. 바인드 할 시기를 놓쳐서 제대로 보여주지 못함.
+                //Log.d(TAG,"블루투스 서비스를 부른다");
+                Intent bluetoothService = new Intent(getApplicationContext(), BluetoothService.class);
+                startService(bluetoothService);
+
+                /* SPP 버전입니다.
                 if(isPairedSeat(SeatName)){  // 페어링 리스트 중에 방석이 있으면 넘어간다.
                     startActivity(new Intent(getApplicationContext(), TabActivity.class));  // 액티비티 재실행한다.
                     finish();   // 끝내기
@@ -145,6 +168,8 @@ public class TabActivity extends AppCompatActivity {
                     startActivity(new Intent(getApplicationContext(), Tutorial1Activity.class));  // 튜토리얼로 다시 이동
                     finish();   // 끝내기
                 }
+                */
+
             } else {
                 Log.d(TAG, "블루투스 요청 후 취소");
                 Toast.makeText(getApplicationContext(), "블루투스를 연결해야 서비스가 가능합니다.", Toast.LENGTH_LONG).show();
