@@ -22,9 +22,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
 
-import app.akexorcist.bluetotohspp.library.BluetoothSPP;
 import rx.Observable;
-import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.subjects.PublishSubject;
 
@@ -51,8 +49,6 @@ public class BluetoothService extends Service {
     private Observable<RxBleConnection> connectionObservable;
     private static final String macAddress = "F4:B8:5E:F0:57:E5";
     UUID characteristicUUID = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb");
-    byte[] test = new byte[]{0x40, 0x41};
-    Subscription subscription;
 
     // 자세별 코드
     private static final int standard = 0;  // 정자세
@@ -79,7 +75,6 @@ public class BluetoothService extends Service {
     private static final int realTimeModeInterval = 1000;   // 실시간모드 실행주기
     private static final int tab1ModeInterval = 3000;   // 방석연결상태 실행주기
 
-    BluetoothSPP bt;
 
     private Messenger mRemote;  // 서비스와 액티비티 간에 통신을 하기 위해서 쓰는 메신저
     Timer timer;    // 일정시간마다 일을 하기 위해서 .. 타이머
@@ -109,14 +104,12 @@ public class BluetoothService extends Service {
     public boolean onUnbind(Intent intent) {
         // TODO Auto-generated method stub
         Log.d(TAG,"서비스가 unbind 됨");
-
         return super.onUnbind(intent);
     }
 
     // what 값에 따라서 액티비티에서 받았을 때 처리가 달라진다.
     // 현재 Service -> Tab1 간에 통신은  what 값 0을 사용 (방석의 상태)
     // 현재 Service -> Tab3 간에 통신은  what 값 1을 사용 (자세의 결과)
-
     public void remoteSendMessage_Tab1(String data) {    // 액티비티로 메시지 전달. 방석의 연결 유무 상태를 나타내주기 위해 사용
         if (mRemote != null) {
             Message msg = new Message();
@@ -154,20 +147,15 @@ public class BluetoothService extends Service {
             TimerTask timerTask_Common = new TimerTask() {
                 public void run() { // 일반모드에서 어떻게 동작하는지
                     Log.d(TAG, "일반모드 요청 패킷 전송");
-
-                    if (device.getConnectionState() == RxBleConnection.RxBleConnectionState.CONNECTED) {
+                    if (isBluetoothConnected()) {
                         connectionObservable
                                 .flatMap(rxBleConnection -> rxBleConnection.writeCharacteristic(characteristicUUID, bluetoothPacket.makeCommonModePacket()))
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(bytes -> {
-                                    Log.d(TAG, "일반모드 성공");
+                                    Log.d(TAG, "일반모드 전송 성공");
                                 }, throwable -> {
-                                    Log.d(TAG, "일반모드 실패" + throwable);
+                                    Log.d(TAG, "일반모드 전송 실패" + throwable);
                                 });
-                    }
-
-                    if(bt != null && bt.getServiceState() == 3) {
-                        bt.send(bluetoothPacket.makeCommonModePacket(), false); // 일반모드 요청 패킷을 보낸다.
                     }
                 }
             };
@@ -177,23 +165,13 @@ public class BluetoothService extends Service {
             // 주기적으로 방석의 상태를 보내주는 일을 한다. 이것을 안하면 바뀌는 순간에만 텍스트뷰를 바꾸니... 바뀐 순간에 그 화면을 안보면 안바꿔짐
             TimerTask timerTask_Tab1 = new TimerTask() {
                 public void run() {
-                    Log.d(TAG, "TimerTask_Tab1 실행 됨");
-
+                    Log.d(TAG, "방석의 연결상태 전송");
                     Log.d(TAG, "연결 상태 : " + device.getConnectionState());
-
-                    if (device.getConnectionState() == RxBleConnection.RxBleConnectionState.CONNECTED) {
+                    if (isBluetoothConnected()) {
                         remoteSendMessage_Tab1("1"); // 연결되었다고 보내자.
                     }else {
                         remoteSendMessage_Tab1("0");
                     }
-
-                    /* spp
-                    //Log.d(TAG, "현재 상태 : " + serviceState);
-                    if (bt != null && bt.getServiceState() == 3)   // 3이면 블루투스에서 연결상태임
-                        remoteSendMessage_Tab1("1"); // 연결되었다고 보내자.
-                    else
-                        remoteSendMessage_Tab1("0");
-                    */
                 }
             };
 
@@ -202,25 +180,17 @@ public class BluetoothService extends Service {
             // 자세의 결과를 보내준다.
             TimerTask timerTask_Tab3 = new TimerTask() {
                 public void run() {
-                    Log.d(TAG, "TimerTask_Tab3 실행 됨");
-
-                    if (device.getConnectionState() == RxBleConnection.RxBleConnectionState.CONNECTED) {
+                    Log.d(TAG, "실시간모드 요청 패킷 전송");
+                    if (isBluetoothConnected()) {
                         connectionObservable
                                 .flatMap(rxBleConnection -> rxBleConnection.writeCharacteristic(characteristicUUID, bluetoothPacket.makeRealTimeModePacket()))
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(bytes -> {
-                                    Log.d(TAG, "실시간모드 성공");
+                                    Log.d(TAG, "실시간모드 전송 성공");
                                 }, throwable -> {
-                                    Log.d(TAG, "실시간모드 실패" + throwable);
+                                    Log.d(TAG, "실시간모드 전송 실패" + throwable);
                                 });
                     }
-
-
-                    /*
-                    if(bt != null && bt.getServiceState() == 3) {
-                        bt.send(bluetoothPacket.makeRealTimeModePacket(), false);   // 실시간모드 요청 패킷을 보낸다.
-                    }
-                    */
                 }
             };
 
@@ -304,10 +274,8 @@ public class BluetoothService extends Service {
 
     public void stopService(){
         // 블루투스 찾는 것 중지
-        if(bt != null){
-            bt.stopService();
-            bt = null;
-        }
+        connectionObservable = null;
+
         // 타이머테스크 중지
         if(timer != null){
             timer.cancel();
@@ -328,46 +296,22 @@ public class BluetoothService extends Service {
 
     @Override
     public void onCreate() {
-        bluetoothPacket = new BluetoothPacket();
+        bluetoothPacket = new BluetoothPacket();    // 블루투스 패킷을 디코딩하기 위한 클래스
 
+        // BLE 관련입니다.
         rxBleClient = RxBleClient.create(getApplicationContext());
-        device = rxBleClient.getBleDevice(macAddress);
-
+        device = rxBleClient.getBleDevice(macAddress);  // 디바이스를 얻어옵니다.
         PublishSubject<Void> disconnectTriggerSubject = PublishSubject.create();
-        connectionObservable = device
-                .establishConnection(getApplicationContext(), true)
+
+        // 디바이스의 연결을 공유하는 connectionObservable. 이것을 활용해서 나중에 읽기 쓰기를 합니다.
+       connectionObservable = device
+                .establishConnection(getApplicationContext(), true) // 오른쪽 boolean 인자는 자동연결 관련입니다.
                 .observeOn(AndroidSchedulers.mainThread())
                 .takeUntil(disconnectTriggerSubject)
                 .compose(new ConnectionSharingAdapter());
-        connectionObservable.subscribe();
 
-
-        connectionObservable
-                .flatMap(rxBleConnection -> rxBleConnection.readCharacteristic(characteristicUUID))
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(bytes -> {
-                    Log.d(TAG, "데이터 받았다." + bytes.toString());
-                }, throwable -> {
-                    Log.d(TAG, "데이터 못 받았다." + throwable);
-                });
-
-        /*
-        device.establishConnection(getApplicationContext(), true)
-                .flatMap(rxBleConnection -> rxBleConnection.readCharacteristic(characteristicUUID)
-                        .doOnNext(bytes -> {
-                            // Process read data.
-                            Log.d(TAG, "으으1 :" + bytes );
-                        })
-                        .flatMap(bytes -> rxBleConnection.writeCharacteristic(characteristicUUID, test)))
-                .subscribe(
-                        writeBytes -> {
-                            Log.d(TAG, "으으2 :" + writeBytes );
-                        },
-                        throwable -> {
-                            Log.d(TAG, "으으3 :" + throwable );
-                        }
-                );
-                */
+        setBluetoothConnect();  // 블루투스 연결을 실제로 시작
+        setBluetoothRead();     // 블루투스 읽기를 시작
 
         centroid0 = new Centroid(0.79255102,-1.647755102); // 정자세
         centroid1 = new Centroid(-2.389793814,-0.439484536);   // 왼쪽
@@ -375,26 +319,6 @@ public class BluetoothService extends Service {
         centroid3 = new Centroid(0.194646465,-1.044747475); // 앞으로 쏠
         centroid4 = new Centroid(0.922626263,-1.468989899); // 뒤로 쏠
         centroid5 = new Centroid(0.2966,4.2344); // 엉덩이 앞으로 뺌
-
-        bt = new BluetoothSPP(getApplicationContext());
-
-        /*
-        // 자동연결부분
-        bt.setupService();
-        //bt.startService(BluetoothState.DEVICE_ANDROID);
-        bt.startService(BluetoothState.DEVICE_OTHER);
-        bt.autoConnect(SeatName);
-        */
-
-        // 블루투스 리스너
-        bt.setOnDataReceivedListener(new BluetoothSPP.OnDataReceivedListener() {
-            public void onDataReceived(byte[] data, String message) {
-                // Do something when data incoming
-                Log.d(TAG, "블루투스 데이터 받았다 -> " + message);
-                bluetoothPacket.decodePacket(data); // 패킷을 디코딩한다.
-                processPacket(bluetoothPacket);
-            }
-        });
 
         Log.d(TAG,"서비스가 시작되었습니다.");
 
@@ -405,20 +329,15 @@ public class BluetoothService extends Service {
             public void run() { // 일반모드에서 어떻게 동작하는지
                 Log.d(TAG, "일반모드 요청 패킷 전송");
 
-                if (device.getConnectionState() == RxBleConnection.RxBleConnectionState.CONNECTED) {
+                if (isBluetoothConnected()) {
                     connectionObservable
                             .flatMap(rxBleConnection -> rxBleConnection.writeCharacteristic(characteristicUUID, bluetoothPacket.makeCommonModePacket()))
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(bytes -> {
-                                Log.d(TAG, "일반모드 성공");
+                                Log.d(TAG, "일반모드 전송 성공");
                             }, throwable -> {
-                                Log.d(TAG, "일반모드 실패" + throwable);
+                                Log.d(TAG, "일반모드 전송 실패" + throwable);
                             });
-                }
-
-
-                if(bt != null && bt.getServiceState() == 3) {
-                    bt.send(bluetoothPacket.makeCommonModePacket(), false); // 일반모드 요청 패킷을 보낸다.
                 }
             }
         };
@@ -435,7 +354,6 @@ public class BluetoothService extends Service {
     public void onDestroy() {
         Log.d(TAG,"서비스가 종료되었습니다.");
         super.onDestroy();
-        bt.stopService();
     }
 
     public void setAlarm(){
@@ -502,7 +420,8 @@ public class BluetoothService extends Service {
         } else if(decodedPacket.getMode() == 2){
             Log.d(TAG, "실시간모드 처리");
             int guessedPosition = guessPosition(decodedPacket.getValue(),decodedPacket.getPosition());
-            if (bt != null && bt.getServiceState() == 3)   // 3이면 블루투스 연결상태
+
+            if (isBluetoothConnected())
                 remoteSendMessage_Tab3(String.valueOf(guessedPosition)); // 자세의 결과를 Tab3로 보냄
             else
                 remoteSendMessage_Tab3("-1");   // 블루투스 연결이 안되어있음
@@ -562,11 +481,46 @@ public class BluetoothService extends Service {
         return score;
     }
 
-    /*
-    이 라이브러리에서는 다시연결이 없다. AutoConnect은 다른 기능(연결 전까지는 계속 기다려주는 것)
-    연결시도 -> 연결성공 -> 연결끊김 (-> 다시연결 )
-    따라서 다시연결 기능을 만들기 위해서 상태 변경 리스너에 연결이 끊긴 경우에는 아래 함수를 불러온다.
-    이 함수에서는 재귀로 동작하며 연결을 다시 시도한다.
-    추후 연결했던 것이 끊어지면 throwable이 동작하는데 이때 이 함수를 재귀로 호출하여 위에서 필요한 다시 연결을 구현했다.
-     */
+    public boolean isBluetoothConnected(){
+        return device.getConnectionState() == RxBleConnection.RxBleConnectionState.CONNECTED;
+    }
+
+    public void setBluetoothConnect(){
+        connectionObservable.subscribe(
+                characteristicValue -> {
+                    // Read characteristic value.
+                    Log.d(TAG, "블루투스가 연결되었다.");
+                },
+                throwable -> {
+                    // Handle an error here.
+                    Log.d(TAG, "블루투스가 연결 실패. 내용 : " + throwable);
+                    Log.d(TAG, "재연결을 시도합니다.");
+                    setBluetoothConnect();
+                }
+        );
+    }
+
+    public void setBluetoothRead(){
+        // read 와 관련된 부분입니다. 리스너라고 생각하세요.
+        connectionObservable.flatMap(rxBleConnection -> rxBleConnection.setupNotification(characteristicUUID))
+                .doOnNext(notificationObservable -> {
+                    // Notification has been set up
+                    // 리스너가 세팅된 후 동작을 여기에 적습니다.
+                })
+                .flatMap(notificationObservable -> notificationObservable) // <-- Notification has been set up, now observe value changes.
+                .subscribe(
+                        bytes -> {
+                            // Given characteristic has been changes, here is the value.// Given characteristic has been changes, here is the value.
+                            Log.d(TAG, "값이 들어왔습니다.");
+                            bluetoothPacket.decodePacket(bytes); // 패킷을 디코딩한다.
+                            processPacket(bluetoothPacket); // 디코딩한 패킷 처리
+                        },
+                        throwable -> {
+                            Log.d(TAG, "read에 예외가 발생했습니다. 내용 : " + throwable);
+                            Log.d(TAG, "Read 재연결을 시도합니다.");
+                            setBluetoothRead();
+                        }
+                );
+    }
+
 }

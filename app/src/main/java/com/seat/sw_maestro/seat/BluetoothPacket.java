@@ -80,6 +80,16 @@ public class BluetoothPacket {
     void decodePacket(byte[] inputPacket){
         Log.d(TAG, "패킷을 이제 디코딩한다.");
 
+        // 테스트 출력
+        String tempPacketToString = "";
+        try{
+            tempPacketToString = new String(inputPacket, "UTF-8");
+            Log.d(TAG, "packetToString : " + tempPacketToString);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+
         if((inputPacket[0] == startByte) && (inputPacket[inputPacket.length-1] == endByte)){    // 정상 패킷 검사 1(Start,End 검사)
             // start와 end 부분은 버린다. 공백으로 바꾼다.
             inputPacket[0] = 0x30;
@@ -89,7 +99,7 @@ public class BluetoothPacket {
             String packetToString = "";
             try{
                 packetToString = new String(inputPacket, "UTF-8");
-                Log.d(TAG, "packetToString : " + packetToString);
+                //Log.d(TAG, "packetToString : " + packetToString);
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
