@@ -45,13 +45,22 @@ import rx.subjects.PublishSubject;
 */
 
 public class BluetoothService extends Service {
+    private static final String TAG = "BluetoothService";
 
     //BLE
     RxBleDevice device;
     RxBleClient rxBleClient;
     private Observable<RxBleConnection> connectionObservable;
-    private static final String macAddress = "F4:B8:5E:F0:57:E5";
-    UUID characteristicUUID = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb");
+    private static final String macAddress = "20:CD:39:7B:FC:5F";   // 기기를 찾기 위한 맥어드레스
+    UUID characteristicUUID = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb");  // 통신을 위한 UUID
+
+    //SPP
+    private static final String SeatName = "seat";    // 방석의 블루투스 이름을 입력한다.
+
+    // 방석과 통신을 할 주기(ms 단위입니다. 예) 1초 = 1000)
+    private static final int commonModeInterval = 10000; // 일반모드 실행주기
+    private static final int realTimeModeInterval = 3000;   // 실시간모드 실행주기
+    private static final int tab1ModeInterval = 3000;   // 방석연결상태 실행주기
 
     // 자세별 코드
     private static final int standard = 0;  // 정자세
@@ -70,14 +79,6 @@ public class BluetoothService extends Service {
     Centroid centroid3; // 앞쪽
     Centroid centroid4; // 뒤쪽
     Centroid centroid5; // 엉덩이 앞쪽
-
-    private static final String TAG = "BluetoothService";
-    private static final String SeatName = "seat";    // 방석의 블루투스 이름을 입력한다.
-
-    private static final int commonModeInterval = 10000; // 일반모드 실행주기
-    private static final int realTimeModeInterval = 1000;   // 실시간모드 실행주기
-    private static final int tab1ModeInterval = 3000;   // 방석연결상태 실행주기
-
 
     private Messenger mRemote;  // 서비스와 액티비티 간에 통신을 하기 위해서 쓰는 메신저
     Timer timer;    // 일정시간마다 일을 하기 위해서 .. 타이머
@@ -521,7 +522,10 @@ public class BluetoothService extends Service {
                             // Given characteristic has been changes, here is the value.// Given characteristic has been changes, here is the value.
                             Log.d(TAG, "값이 들어왔습니다.");
                             bluetoothPacket.decodePacket(bytes); // 패킷을 디코딩한다.
-                            processPacket(bluetoothPacket); // 디코딩한 패킷 처리
+                            if(bluetoothPacket.getIsPacketCompleted()) { // 패킷이 완성되었다면
+                                Log.d(TAG, "패킷을 처리합니다.");
+                                processPacket(bluetoothPacket); // 디코딩한 패킷 처리
+                            }
                         },
                         throwable -> {
                             Log.d(TAG, "read에 예외가 발생했습니다. 내용 : " + throwable);
@@ -551,7 +555,6 @@ public class BluetoothService extends Service {
                         break;
                     case BluetoothAdapter.STATE_TURNING_ON:
                         Log.d(TAG, "블루투스 킴");
-
                         break;
                 }
             }
