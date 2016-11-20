@@ -51,7 +51,7 @@ public class BluetoothService extends Service {
     RxBleDevice device;
     RxBleClient rxBleClient;
     private Observable<RxBleConnection> connectionObservable;
-    private static final String macAddress = "20:CD:39:7B:FC:5F";   // 기기를 찾기 위한 맥어드레스
+    private static final String macAddress = "88:4A:EA:76:BD:51";   // 기기를 찾기 위한 맥어드레스
     UUID characteristicUUID = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb");  // 통신을 위한 UUID
 
     //SPP
@@ -300,7 +300,8 @@ public class BluetoothService extends Service {
 
     @Override
     public void onCreate() {
-        Log.d(TAG,"서비스가 시작되었습니다.");
+        Log.d(TAG, "서비스가 시작되었습니다.");
+        Log.d(TAG, "타겟 어드레스 : " + macAddress);
 
         centroid0 = new Centroid(0.79255102,-1.647755102); // 정자세
         centroid1 = new Centroid(-2.389793814,-0.439484536);   // 왼쪽

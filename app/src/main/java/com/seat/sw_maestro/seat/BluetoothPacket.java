@@ -23,28 +23,28 @@ public class BluetoothPacket {
     final static byte realTimeMode = (byte)0x02;  // 실시간모드 뜻함
 
     // 타입 사이즈. (mode, date, value, position, length)
-    final static int typeSize = 5;
+    final static private int typeSize = 5;
 
     // 데이터 타입별 내부 데이터의 개수 (1이면 아래 타입별 변수를 배열로 만들 필요가 없지)
-    final static int modeSize = 1;
-    final static int dateSize = 4;
-    final static int valueSize = 9;
-    final static int positionSize = 2;
-    final static int lengthSize = 1;
+    final static private int modeSize = 1;
+    final static private int dateSize = 4;
+    final static private int valueSize = 9;
+    final static private int positionSize = 2;
+    final static private int lengthSize = 1;
 
     // 데이터 타입별 변수
-    int mode_int;
-    int[] date_int = new int[dateSize]; // yy mm dd hh
-    int[] value_int = new int[valueSize];
-    double[] position_double = new double[positionSize];
-    int length_int;
+    private int mode_int;
+    private int[] date_int = new int[dateSize]; // yy mm dd hh
+    private int[] value_int = new int[valueSize];
+    private double[] position_double = new double[positionSize];
+    private int length_int;
 
     // 데이터 타입별 변수
-    String mode_string;
-    String[] date_string = new String[dateSize];
-    String[] value_string = new String[valueSize];
-    String[] position_string = new String[positionSize];
-    String length_string;
+    private String mode_string;
+    private String[] date_string = new String[dateSize];
+    private String[] value_string = new String[valueSize];
+    private String[] position_string = new String[positionSize];
+    private String length_string;
 
     /*  BLE 전용입니다.
     SPP와는 다르게 BLE는 데이터가 20byte 씩 끊어져서 들어옵니다.
