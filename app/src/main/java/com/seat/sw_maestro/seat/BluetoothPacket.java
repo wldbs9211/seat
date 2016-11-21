@@ -38,6 +38,7 @@ public class BluetoothPacket {
     private int[] value_int = new int[valueSize];
     private double[] position_double = new double[positionSize];
     private int length_int;
+    private int battery_int;
 
     // 데이터 타입별 변수
     private String mode_string;
@@ -45,6 +46,8 @@ public class BluetoothPacket {
     private String[] value_string = new String[valueSize];
     private String[] position_string = new String[positionSize];
     private String length_string;
+    private String battery_string;
+
 
     /*  BLE 전용입니다.
     SPP와는 다르게 BLE는 데이터가 20byte 씩 끊어져서 들어옵니다.
@@ -81,6 +84,8 @@ public class BluetoothPacket {
     double[] getPosition(){
         return position_double;
     }
+
+    int getBattery(){ return battery_int; }
 
     int getLength(){
         return length_int;
@@ -155,8 +160,12 @@ public class BluetoothPacket {
                             }
                         }
 
+                        // 배터리 잔량을 얻습니다.
+                        battery_string = splitedIntoPart[4];
+                        battery_int = StringToInt(battery_string);
+
                         // 길이를 얻습니다.
-                        length_string = splitedIntoPart[4];
+                        length_string = splitedIntoPart[5];
                         length_int = StringToInt(length_string);
                         length_int = length_int / 10;   // 10으로 나눈 이유는 end byte를 0으로 바꿔서 실제 길이에 10이 곱해진다. 따라서 나눈다.
 
@@ -178,6 +187,8 @@ public class BluetoothPacket {
 
                         // Log.d(TAG, "좌표값 : " + position_string[0] + " , " + position_string[1]);
                         Log.d(TAG, "좌표값 : " + position_double[0] + " , " + position_double[1]);
+
+                        Log.d(TAG, "배터리잔량 : " + battery_string);
 
                         //Log.d(TAG, "길이 값 : " + length_string);
                         Log.d(TAG, "길이 값 : " + length_int);

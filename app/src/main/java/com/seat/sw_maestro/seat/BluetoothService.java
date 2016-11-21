@@ -8,6 +8,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -51,14 +52,14 @@ public class BluetoothService extends Service {
     RxBleDevice device;
     RxBleClient rxBleClient;
     private Observable<RxBleConnection> connectionObservable;
-    private static final String macAddress = "88:4A:EA:76:BD:51";   // 기기를 찾기 위한 맥어드레스
+    private static final String macAddress = "20:CD:39:7B:FC:5F";   // 기기를 찾기 위한 맥어드레스
     UUID characteristicUUID = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb");  // 통신을 위한 UUID
 
     //SPP
     private static final String SeatName = "seat";    // 방석의 블루투스 이름을 입력한다.
 
     // 방석과 통신을 할 주기(ms 단위입니다. 예) 1초 = 1000)
-    private static final int commonModeInterval = 10000; // 일반모드 실행주기
+    private static final int commonModeInterval = 30000; // 일반모드 실행주기
     private static final int realTimeModeInterval = 3000;   // 실시간모드 실행주기
     private static final int tab1ModeInterval = 3000;   // 방석연결상태 실행주기
 
@@ -427,6 +428,11 @@ public class BluetoothService extends Service {
             Log.d("databaseTest", "정확도 : " + accuracy);
             Log.d("databaseTest", "날짜 : " + decodedPacket.getDataDate());
 
+            SharedPreferences prefs = getSharedPreferences("battery", MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putInt("battery", bluetoothPacket.getBattery());   // 배터리 잔량 초기화
+            editor.commit();
+
         } else if(decodedPacket.getMode() == 2){
             Log.d(TAG, "실시간모드 처리");
             int guessedPosition = guessPosition(decodedPacket.getValue(),decodedPacket.getPosition());
@@ -506,6 +512,11 @@ public class BluetoothService extends Service {
                     Log.d(TAG, "블루투스가 연결 실패. 내용 : " + throwable);
                     Log.d(TAG, "재연결을 시도합니다.");
                     setBluetoothConnect();
+
+                    SharedPreferences prefs = getSharedPreferences("battery", MODE_PRIVATE);
+                    SharedPreferences.Editor editor = prefs.edit();
+                    editor.putInt("battery", -1);   // 배터리 잔량 초기화
+                    editor.commit();
                 }
         );
     }

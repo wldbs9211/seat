@@ -5,6 +5,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -36,6 +37,11 @@ public class Tab1 extends Fragment {
     TextView textView_TodayComment;
     TextView textView_BarGauge1;
     TextView textView_BarGauge2;
+
+    TextView textView_BatteryGauge1;    // 색칠 게이지
+    TextView textView_BatteryGauge2;
+    TextView textView_Battery1; // 위에 xx%
+    TextView textView_Battery2; // 충전중입니다. 혹은 배터리잔량 글씨
 
     private ServiceConnection mConnection = new ServiceConnection() {   // 서비스와 핸들러를 연결해주는 부분
         @Override
@@ -163,17 +169,14 @@ public class Tab1 extends Fragment {
         textView_BarGauge1 = (TextView) getActivity().findViewById(R.id.textViewBarGauge1); // 정확도 게이지1
         textView_BarGauge2 = (TextView) getActivity().findViewById(R.id.textViewBarGauge2); // 정확도 게이지2
         textView_TodayComment = (TextView) getActivity().findViewById(R.id.textViewTodayComment); // 오늘의 자세 코멘트
+        textView_BatteryGauge1 = (TextView) getActivity().findViewById(R.id.textViewBatteryGauge1); // 배터리 게이지1
+        textView_BatteryGauge2 = (TextView) getActivity().findViewById(R.id.textViewBatteryGauge2); // 배터리 게이지2
+        textView_Battery1 = (TextView) getActivity().findViewById(R.id.textViewBattery1); // 배터리 잔량 숫자
+        textView_Battery2 = (TextView) getActivity().findViewById(R.id.textViewBattery2); // 배터리 코멘트
+
 
 
         DatabaseManager databaseManager = new DatabaseManager(getContext());
-
-        /*
-        databaseManager.insertData("8",24,20,databaseManager.getCurrentDay()); // 임시로 데이터 넣기 나중에 지워
-        databaseManager.insertData("0",53,72,databaseManager.getCurrentDay()); // 임시로 데이터 넣기 나중에 지워
-        databaseManager.insertData("23",22,83,databaseManager.getCurrentDay()); // 임시로 데이터 넣기 나중에 지워
-        databaseManager.insertData("10",13,46,databaseManager.getCurrentDay()); // 임시로 데이터 넣기 나중에 지워
-        databaseManager.insertData("8",4,66,databaseManager.getCurrentDay()); // 임시로 데이터 넣기 나중에 지워
-        */
 
         // 앉은 시간 세팅 부분
         int sittingTime = databaseManager.getSittingTime_OneDay(databaseManager.getCurrentDay());   // 오늘 하루 앉은 시간 받아옴. 분으로
@@ -189,6 +192,12 @@ public class Tab1 extends Fragment {
 
         // 정확도 게이지 세팅 부분
         setBarGauge(accuracy);
+
+        // 배터리 게이지 세팅 부분
+        // 배터리 위한 sharedPreferences
+        SharedPreferences prefs = getActivity().getSharedPreferences("battery", getActivity().MODE_PRIVATE);
+        int battery = prefs.getInt("battery", -1);  // 배터리 잔량
+        setBatteryGauge(battery);
 
         // 방석 상황을 표시하기 위한 부분
         // service 연결 시도
@@ -227,6 +236,38 @@ public class Tab1 extends Fragment {
         textView_BarGauge1.setLayoutParams(params1);
         params2.weight = 100-accuracy;
         textView_BarGauge2.setLayoutParams(params2);
+    }
+
+    public void setBatteryGauge(int battery){  // 배터리 값에 따라서 바 게이지를 조절한다.
+        LinearLayout.LayoutParams params1 = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT);
+        LinearLayout.LayoutParams params2 = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT);
+
+        if(battery == 101){
+            params1.weight = 100;
+            textView_BatteryGauge1.setLayoutParams(params1);
+            params2.weight = 0;
+            textView_BatteryGauge2.setLayoutParams(params2);
+
+            textView_Battery1.setText("배터리가 충전중입니다.");
+            textView_Battery2.setText("");
+        }else if(battery == -1){
+            params1.weight = 0;
+            textView_BatteryGauge1.setLayoutParams(params1);
+            params2.weight = 100;
+            textView_BatteryGauge2.setLayoutParams(params2);
+
+            textView_Battery1.setText("배터리 잔량을 알 수 없습니다.");
+            textView_Battery2.setText("방석을 연결해주세요.");
+        }
+        else {
+            params1.weight = battery;
+            textView_BatteryGauge1.setLayoutParams(params1);
+            params2.weight = 100 - battery;
+            textView_BatteryGauge2.setLayoutParams(params2);
+
+            textView_Battery1.setText(battery + "%");
+            textView_Battery2.setText("배터리 잔량");
+        }
     }
 
     public int[] getHourMinute(int sittingTime){    // 분 단위의 sittingTime을 넣으면 몇 시,몇 분으로 바꾸어서 리턴
