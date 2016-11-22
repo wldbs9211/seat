@@ -29,10 +29,19 @@ public class Tab3 extends Fragment {
     private static final String leanLeft = "1";  // 왼쪽으로 쏠렸다.
     private static final String leanRight = "2";  // 오른쪽으로 쏠렸다.
     private static final String front = "3";  // 상체가 앞으로 쏠렸다
-    private static final String back = "4";  // 상체가 뒤로 쏠렸다.
-    private static final String hipFront = "5";  // 엉덩이를 앞으로 뺐다.
-    private static final String crossRightLeg = "6";  // 오른쪽 다리를 왼쪽으로 꼬았다.
-    private static final String crossLeftLeg = "7";  // 왼쪽 다리를 오른쪽으로 꼬았다.
+    private static final String hipFront = "4";  // 엉덩이를 앞으로 뺐다.
+    private static final String crossRightLeg = "5";  // 오른쪽 다리를 왼쪽으로 꼬았다.
+    private static final String crossLeftLeg = "6";  // 왼쪽 다리를 오른쪽으로 꼬았다.
+
+    private static final String[] comment = {
+            "정자세입니다! 좋아요.",
+            "왼쪽으로 쏠렸습니다.",
+            "오른쪽으로 쏠렸습니다.",
+            "앞으로 쏠렸습니다.",
+            "엉덩이를 앞으로 빼셨나요?",
+            "오른쪽 다리를 꼬았습니다.",
+            "왼쪽 다리를 꼬았습니다."
+    };
 
     private static final String TAG = "Tab3";
     private Messenger mRemote;  // 블루투스 서비스로부터 받아오는 메시지. 실시간 자세를 받아오기 위해서
@@ -88,36 +97,31 @@ public class Tab3 extends Fragment {
                         그런데 지금 탭3 -> 탭2 -> 탭1로 가는 경우에는 정상적으로 안되는 상황이 발생함. - 해결필요
                      */
 
-                    position2.setText(msg.obj.toString() + "번 자세입니다");
                     switch(msg.obj.toString()){
                         case standard:
                             position.setImageDrawable(getResources().getDrawable(R.drawable.status_realtime_good));
-                            position2.setText("정자세");
+                            position2.setText(comment[Integer.parseInt(standard)]);
                             break;
                         case leanLeft:
                             position.setImageDrawable(getResources().getDrawable(R.drawable.status_realtime_left));
-                            position2.setText("왼쪽쏠림");
+                            position2.setText(comment[Integer.parseInt(leanLeft)]);
                             break;
                         case leanRight:
                             position.setImageDrawable(getResources().getDrawable(R.drawable.status_realtime_right));
-                            position2.setText("오른쪽쏠림");
+                            position2.setText(comment[Integer.parseInt(leanRight)]);
                             break;
                         case front:
                             position.setImageDrawable(getResources().getDrawable(R.drawable.status_realtime_front));
-                            position2.setText("앞으로쏠림");
-                            break;
-                        case back:
-                            position.setImageDrawable(getResources().getDrawable(R.drawable.status_realtime_back));
-                            position2.setText("뒤로쏠림");
+                            position2.setText(comment[Integer.parseInt(front)]);
                             break;
                         case hipFront:
-                            position2.setText("엉덩이 앞으로 뺌");
+                            position2.setText(comment[Integer.parseInt(hipFront)]);
                             break;
                         case crossLeftLeg:
-                            position2.setText("왼쪽으로 다리 꼼");
+                            position2.setText(comment[Integer.parseInt(crossLeftLeg)]);
                             break;
                         case crossRightLeg:
-                            position2.setText("오른쪽으로 다리 꼼");
+                            position2.setText(comment[Integer.parseInt(crossRightLeg)]);
                             break;
                     }
 

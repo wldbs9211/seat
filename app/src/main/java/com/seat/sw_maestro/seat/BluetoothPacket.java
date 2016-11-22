@@ -231,10 +231,16 @@ public class BluetoothPacket {
                         Log.d(TAG, "모드 : " + mode_int);
 
                         Log.d(TAG, "셀값 ");
+                        /*
                         for (int i = 0; i < value_string.length; i++) {
-                            //Log.d(TAG, value_string[i]);
                             Log.d(TAG, "" + value_int[i]);
                         }
+                        */
+                        Log.d(TAG, "" + value_int[0] + " " + value_int[1] + " " + value_int[2]);
+                        Log.d(TAG, "" + value_int[3] + " " + value_int[4] + " " + value_int[5]);
+                        Log.d(TAG, "" + value_int[6] + " " + value_int[7] + " " + value_int[8]);
+
+
 
                         // Log.d(TAG, "좌표값 : " + position_string[0] + " , " + position_string[1]);
                         Log.d(TAG, "좌표값 : " + position_double[0] + " , " + position_double[1]);

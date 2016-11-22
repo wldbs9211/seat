@@ -59,27 +59,29 @@ public class BluetoothService extends Service {
     private static final String SeatName = "seat";    // 방석의 블루투스 이름을 입력한다.
 
     // 방석과 통신을 할 주기(ms 단위입니다. 예) 1초 = 1000)
-    private static final int commonModeInterval = 30000; // 일반모드 실행주기
-    private static final int realTimeModeInterval = 3000;   // 실시간모드 실행주기
-    private static final int tab1ModeInterval = 3000;   // 방석연결상태 실행주기
+    private static final int commonModeInterval = 180 * 1000; // 일반모드 실행주기
+    private static final int realTimeModeInterval = 2 * 1000;   // 실시간모드 실행주기
+    private static final int tab1ModeInterval = 3 * 1000;   // 방석연결상태 실행주기
 
     // 자세별 코드
     private static final int standard = 0;  // 정자세
     private static final int leanLeft = 1;  // 왼쪽으로 쏠렸다.
     private static final int leanRight = 2;  // 오른쪽으로 쏠렸다.
     private static final int front = 3;  // 상체가 앞으로 쏠렸다
-    private static final int back = 4;  // 상체가 뒤로 쏠렸다.
-    private static final int hipFront = 5;  // 엉덩이를 앞으로 뺐다.
-    private static final int crossRightLeg = 6;  // 오른쪽 다리를 왼쪽으로 꼬았다.
-    private static final int crossLeftLeg = 7;  // 왼쪽 다리를 오른쪽으로 꼬았다.
+    private static final int hipFront = 4;  // 엉덩이를 앞으로 뺐다.
+    private static final int crossRightLeg = 5;  // 오른쪽 다리를 왼쪽으로 꼬았다.
+    private static final int crossLeftLeg = 6;  // 왼쪽 다리를 오른쪽으로 꼬았다.
+
+    // 왼쪽 오른쪽 다리를 꼬았음에 사용되는 변수. (예 : 왼쪽 쏠리고 left value보다 작으면 오른쪽 다리 꼬았음)
+    private static final int threshold_left = 20;
+    private static final int threshold_right = 20;
 
     // 자세별 중심점 그룹
-    Centroid centroid0; // 정자세
-    Centroid centroid1; // 왼쪽
-    Centroid centroid2; // 오른쪽
-    Centroid centroid3; // 앞쪽
-    Centroid centroid4; // 뒤쪽
-    Centroid centroid5; // 엉덩이 앞쪽
+    Centroid centroid0 = new Centroid(-1.2,-1.05); // 정자세
+    Centroid centroid1 = new Centroid(-2.2,-0.95);   // 왼쪽
+    Centroid centroid2 = new Centroid(0.2,-0.6);    // 오른쪽
+    Centroid centroid3 = new Centroid(-1.2,0); // 앞으로 쏠
+    Centroid centroid4 = new Centroid(-0.3, 2.8); // 엉덩이 앞으로 뺌
 
     private Messenger mRemote;  // 서비스와 액티비티 간에 통신을 하기 위해서 쓰는 메신저
     Timer timer;    // 일정시간마다 일을 하기 위해서 .. 타이머
@@ -304,13 +306,6 @@ public class BluetoothService extends Service {
         Log.d(TAG, "서비스가 시작되었습니다.");
         Log.d(TAG, "타겟 어드레스 : " + macAddress);
 
-        centroid0 = new Centroid(0.79255102,-1.647755102); // 정자세
-        centroid1 = new Centroid(-2.389793814,-0.439484536);   // 왼쪽
-        centroid2 = new Centroid(1.8,-3.3);    // 오른쪽
-        centroid3 = new Centroid(0.194646465,-1.044747475); // 앞으로 쏠
-        centroid4 = new Centroid(0.922626263,-1.468989899); // 뒤로 쏠
-        centroid5 = new Centroid(0.2966,4.2344); // 엉덩이 앞으로 뺌
-
         bluetoothPacket = new BluetoothPacket();    // 블루투스 패킷을 디코딩하기 위한 클래스
 
         // BLE 관련입니다.
@@ -364,6 +359,10 @@ public class BluetoothService extends Service {
     @Override
     public void onDestroy() {
         Log.d(TAG,"서비스가 종료되었습니다.");
+        SharedPreferences prefs = getSharedPreferences("battery", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putInt("battery", -1);   // 배터리 잔량 초기화
+        editor.commit();
         super.onDestroy();
     }
 
@@ -451,26 +450,24 @@ public class BluetoothService extends Service {
      */
     public int guessPosition(int[] cellValue, double[] positionValue){
 
-        double[] positionProbability = new double[6];
+        double[] positionProbability = new double[5];
         positionProbability[standard] = centroid0.getDistance(positionValue[0],positionValue[1]);  // 정자세
         positionProbability[leanLeft] = centroid1.getDistance(positionValue[0],positionValue[1]);  // 왼쪽
         positionProbability[leanRight] = centroid2.getDistance(positionValue[0],positionValue[1]);  // 오른쪽
         positionProbability[front] = centroid3.getDistance(positionValue[0],positionValue[1]);  // 상체 앞으로
-        positionProbability[back] = centroid4.getDistance(positionValue[0],positionValue[1]);  // 상체 뒤로
-        positionProbability[hipFront] = centroid5.getDistance(positionValue[0],positionValue[1]);  // 엉덩이 앞으로
+        positionProbability[hipFront] = centroid4.getDistance(positionValue[0],positionValue[1]);  // 엉덩이 앞으로
 
         Log.d(TAG,"정자세" + positionProbability[standard]);
         Log.d(TAG,"왼쪽" + positionProbability[leanLeft]);
         Log.d(TAG,"오른쪽" + positionProbability[leanRight]);
         Log.d(TAG,"상체앞" + positionProbability[front]);
-        Log.d(TAG,"상체뒤" + positionProbability[back]);
         Log.d(TAG,"엉덩이 앞" + positionProbability[hipFront]);
 
         int positionResult = getMinIndex(positionProbability);
 
-        if(positionResult == leanLeft && cellValue[2] <= 10){   // 왼쪽으로 쏠린 자세인데, 오른쪽 앞 부분이 안눌렸다 -> 오른쪽 다리를 꼬았음
+        if(positionResult == leanLeft && cellValue[2] <= threshold_right){   // 왼쪽으로 쏠린 자세인데, 오른쪽 앞 부분이 안눌렸다 -> 오른쪽 다리를 꼬았음
             return crossRightLeg;
-        }else if(positionResult == leanRight && cellValue[0] <= 10){ // 오른쪽으로 쏠린 자세인데, 왼쪽 앞 부분이 비었다 -> 왼쪽 다리를 꼬았음
+        }else if(positionResult == leanRight && cellValue[0] <= threshold_left){ // 오른쪽으로 쏠린 자세인데, 왼쪽 앞 부분이 비었다 -> 왼쪽 다리를 꼬았음
             return crossLeftLeg;
         }else {
             return positionResult;
@@ -489,7 +486,6 @@ public class BluetoothService extends Service {
             case leanLeft : score = 80; break;
             case leanRight: score = 80; break;
             case front : score = 80; break;
-            case back : score = 80; break;
             case hipFront : score = 40; break;
             case crossRightLeg : score = 30; break;
             case crossLeftLeg : score = 30; break;
@@ -543,6 +539,11 @@ public class BluetoothService extends Service {
                             Log.d(TAG, "read에 예외가 발생했습니다. 내용 : " + throwable);
                             Log.d(TAG, "Read 재연결을 시도합니다.");
                             setBluetoothRead();
+
+                            SharedPreferences prefs = getSharedPreferences("battery", MODE_PRIVATE);
+                            SharedPreferences.Editor editor = prefs.edit();
+                            editor.putInt("battery", -1);   // 배터리 잔량 초기화
+                            editor.commit();
                         }
                 );
     }
