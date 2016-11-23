@@ -53,47 +53,47 @@ public class BluetoothPacket {
     SPP와는 다르게 BLE는 데이터가 20byte 씩 끊어져서 들어옵니다.
     따라서 각각 들어온 패킷을 합치는 작업이 필요합니다.
      */
-    boolean isPacketCompleted = false;  // 패킷이 완료되었는지 알려줍니다.
-    String tempString = ""; // 각각 들어온 패킷을 이 변수에 저장합니다.
+    private boolean isPacketCompleted = false;  // 패킷이 완료되었는지 알려줍니다.
+    private String tempString = ""; // 각각 들어온 패킷을 이 변수에 저장합니다.
 
     // 생성자
     BluetoothPacket(){
 
     }
 
-    int getMode(){
+    public int getMode(){
         return mode_int;
     }
 
-    int[] getDate(){
+    public int[] getDate(){
         return date_int;
     }
 
-    String getDataDate(){   // 리턴 예) String "20161102"
+    public String getDataDate(){   // 리턴 예) String "20161102"
         return "20" + date_string[0] + date_string[1] + date_string[2];
     }
 
-    String getDataHour(){   // 데이터의 시간 리턴
+    public String getDataHour(){   // 데이터의 시간 리턴
         return date_string[3];
     }
 
-    int[] getValue(){
+    public int[] getValue(){
         return value_int;
     }
 
-    double[] getPosition(){
+    public double[] getPosition(){
         return position_double;
     }
 
-    int getBattery(){ return battery_int; }
+    public int getBattery(){ return battery_int; }
 
-    int getLength(){
+    public int getLength(){
         return length_int;
     }
 
-    boolean getIsPacketCompleted() { return isPacketCompleted; }
+    public boolean getIsPacketCompleted() { return isPacketCompleted; }
 
-    void decodePacket(byte[] inputPacket) {
+    public void decodePacket(byte[] inputPacket) {
         Log.d(TAG, "패킷이 들어왔다.");
         Log.d(TAG, "내용 : " + byteToString(inputPacket));
 
@@ -416,7 +416,7 @@ public class BluetoothPacket {
     */
 
 
-    byte[] makeCommonModePacket(){  // 일반모드용 요청 패킷
+    public byte[] makeCommonModePacket(){  // 일반모드용 요청 패킷
         /* 패킷의 구성
         | Start(0xFF) | Mode(0x01) | YY MM DD hh mm ss | Length(0x08) | End(0xFE) |
         1, 1, 6, 1, 1 바이트씩 총 10Byte 크기의 패킷
@@ -461,7 +461,7 @@ public class BluetoothPacket {
         return commonModePacket;
     }
 
-    byte[] makeRealTimeModePacket(){  // 실시간모드용 요청 패킷
+    public byte[] makeRealTimeModePacket(){  // 실시간모드용 요청 패킷
         /* 패킷의 구성
         | Start(0xFF) | Mode(0x02) | Length(0x02) | End(0xFE) |
         1, 1, 1, 1 바이트씩 총 4Byte 크기의 패킷
@@ -478,11 +478,11 @@ public class BluetoothPacket {
         return commonModePacket;
     }
 
-    int StringToInt(String stringData){
+    private int StringToInt(String stringData){
         return Integer.parseInt(stringData);
     }
 
-    String byteToString(byte[] byteData){
+    private String byteToString(byte[] byteData){
         String stringData = "";
         try{
             stringData = new String(byteData, "UTF-8");

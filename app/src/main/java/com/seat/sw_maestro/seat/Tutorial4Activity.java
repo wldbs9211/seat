@@ -10,7 +10,7 @@ import android.widget.TextView;
 public class Tutorial4Activity extends AppCompatActivity {
 
     int count = 0;
-    static final int maxList = 7;
+    static final int maxList = 6;
 
     Button buttonBack;
     Button buttonNext;
@@ -23,7 +23,6 @@ public class Tutorial4Activity extends AppCompatActivity {
                           "왼쪽으로 기울었습니다.",
                           "오른쪽으로 기울었습니다.",
                           "앞으로 기울었습니다.",
-                          "뒤로 기울었습니다.",
                           "엉덩이를 앞으로 빼셨습니다.",
                           "왼쪽 다리를 꼬셨습니다.",
                           "오른쪽 다리를 꼬셨습니다."};
@@ -31,7 +30,6 @@ public class Tutorial4Activity extends AppCompatActivity {
     static final String[] DescriptionList = {"이 자세를 유지하세요!",
                                 "좌우 균형을 맞추세요!",
                                 "좌우 균형을 맞추세요!",
-                                "자세를 바로잡으세요!",
                                 "자세를 바로잡으세요!",
                                 "허리에 몹시 안 좋아요!",
                                 "몸에 엄청 안 좋아요!",
@@ -100,16 +98,13 @@ public class Tutorial4Activity extends AppCompatActivity {
                 imageViewPosition.setImageDrawable(getResources().getDrawable(R.drawable.status_realtime_front));
                 break;
             case 4 :
-                imageViewPosition.setImageDrawable(getResources().getDrawable(R.drawable.status_realtime_back));
+                imageViewPosition.setImageDrawable(getResources().getDrawable(R.drawable.status_realtime_hip_front));
                 break;
             case 5 :
-                //imageViewPosition.setImageDrawable(getResources().getDrawable(R.drawable.status_realtime_hipfront));
+                imageViewPosition.setImageDrawable(getResources().getDrawable(R.drawable.status_realtime_cross_left_leg));
                 break;
             case 6 :
-                //imageViewPosition.setImageDrawable(getResources().getDrawable(R.drawable.status_realtime_good));
-                break;
-            case 7 :
-                //imageViewPosition.setImageDrawable(getResources().getDrawable(R.drawable.status_realtime_good));
+                imageViewPosition.setImageDrawable(getResources().getDrawable(R.drawable.status_realtime_cross_right_leg));
                 break;
         }
     }

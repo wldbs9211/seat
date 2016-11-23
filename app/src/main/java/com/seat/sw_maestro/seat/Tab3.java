@@ -115,12 +115,15 @@ public class Tab3 extends Fragment {
                             position2.setText(comment[Integer.parseInt(front)]);
                             break;
                         case hipFront:
+                            position.setImageDrawable(getResources().getDrawable(R.drawable.status_realtime_hip_front));
                             position2.setText(comment[Integer.parseInt(hipFront)]);
                             break;
                         case crossLeftLeg:
+                            position.setImageDrawable(getResources().getDrawable(R.drawable.status_realtime_cross_left_leg));
                             position2.setText(comment[Integer.parseInt(crossLeftLeg)]);
                             break;
                         case crossRightLeg:
+                            position.setImageDrawable(getResources().getDrawable(R.drawable.status_realtime_cross_right_leg));
                             position2.setText(comment[Integer.parseInt(crossRightLeg)]);
                             break;
                     }
