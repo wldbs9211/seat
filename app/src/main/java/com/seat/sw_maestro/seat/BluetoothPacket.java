@@ -22,8 +22,8 @@ public class BluetoothPacket {
     final static byte commonMode = (byte)0x01;  // 일반모드 뜻함
     final static byte realTimeMode = (byte)0x02;  // 실시간모드 뜻함
 
-    // 타입 사이즈. (mode, date, value, position, length)
-    final static private int typeSize = 5;
+    // 타입 사이즈. (mode, date, value, position, battery,length)
+    final static private int typeSize = 6;
 
     // 데이터 타입별 내부 데이터의 개수 (1이면 아래 타입별 변수를 배열로 만들 필요가 없지)
     final static private int modeSize = 1;

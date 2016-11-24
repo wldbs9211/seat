@@ -107,11 +107,11 @@ public class BluetoothService extends Service {
     private static final int threshold_right = 20;
 
     // 최종 학습 후 자세별 군집의 중심좌표입니다.
-    private static final Centroid centroid_standard = new Centroid(-0.2,-1.5);  // 정자세
-    private static final Centroid centroid_leanLeft = new Centroid(-3,-2);      // 왼쪽으로 쏠렸습니다.
-    private static final Centroid centroid_leanRight = new Centroid(3,-1.7);    // 오른쪽으로 쏠렸습니다.
-    private static final Centroid centroid_front = new Centroid(-0.5,-1.3);     // 앞으로 쏠렸습니다.
-    private static final Centroid centroid_hipFront = new Centroid(0.4, 1);     // 엉덩이 앞으로 뺐습니다.
+    private static final Centroid centroid_standard = new Centroid(-0.4,-1.6);  // 정자세
+    private static final Centroid centroid_leanLeft = new Centroid(-1.4,-0.8);      // 왼쪽으로 쏠렸습니다.
+    private static final Centroid centroid_leanRight = new Centroid(1,0);    // 오른쪽으로 쏠렸습니다.
+    private static final Centroid centroid_front = new Centroid(-0.7,-1);     // 앞으로 쏠렸습니다.
+    private static final Centroid centroid_hipFront = new Centroid(0, 1);     // 엉덩이 앞으로 뺐습니다.
 
     // Service의 동작 상태를 변경하기 위한 부분입니다.
     private Messenger mRemote;                   // Service <-> Activity 간에 통신을 하기 위한 Messenger입니다.
@@ -639,6 +639,8 @@ public class BluetoothService extends Service {
                             Log.d(TAG, "read 에 예외가 발생했습니다. 내용 : " + throwable);
                             Log.d(TAG, "Read 재연결을 시도합니다.");
                             resetBattery();     // 재연결 전에 방석의 배터리 상황을 리셋합니다.
+                            bluetoothPacket = null;
+                            bluetoothPacket = new BluetoothPacket();
                             setBluetoothRead(); // 재귀적으로 다시 호출합니다.
                         }
                 );
