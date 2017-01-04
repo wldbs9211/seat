@@ -111,8 +111,8 @@ public class Tab3 extends Fragment {
                             position2.setText(comment[Integer.parseInt(leanRight)]);
                             break;
                         case front:
-                            position.setImageDrawable(getResources().getDrawable(R.drawable.status_realtime_front));
-                            position2.setText(comment[Integer.parseInt(front)]);
+                            position.setImageDrawable(getResources().getDrawable(R.drawable.status_realtime_good));
+                            position2.setText(comment[Integer.parseInt(standard)]);
                             break;
                         case hipFront:
                             position.setImageDrawable(getResources().getDrawable(R.drawable.status_realtime_hip_front));

@@ -198,6 +198,7 @@ public class Tab1 extends Fragment {
         SharedPreferences prefs = getActivity().getSharedPreferences("battery", getActivity().MODE_PRIVATE);
         int battery = prefs.getInt("battery", -1);  // 배터리 잔량
         setBatteryGauge(battery);
+        setBatteryGauge(94);
 
         // 방석 상황을 표시하기 위한 부분
         // service 연결 시도

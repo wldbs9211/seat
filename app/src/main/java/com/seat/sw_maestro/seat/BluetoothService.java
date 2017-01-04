@@ -103,15 +103,15 @@ public class BluetoothService extends Service {
         그 후 오른쪽 앞 부분의 셀 크기가 아래의 threshold_right 값보다 작다면 다리를 꼬은 것으로 판정합니다.
         오른쪽으로 쏠린 경우에는 왼쪽 앞부분의 셀 크기를 threshold_left와 비교합니다.
      */
-    private static final int threshold_left = 20;
-    private static final int threshold_right = 20;
+    private static final int threshold_left = 15;
+    private static final int threshold_right = 35;
 
     // 최종 학습 후 자세별 군집의 중심좌표입니다.
-    private static final Centroid centroid_standard = new Centroid(-0.4,-1.6);  // 정자세
-    private static final Centroid centroid_leanLeft = new Centroid(-1.4,-0.8);      // 왼쪽으로 쏠렸습니다.
-    private static final Centroid centroid_leanRight = new Centroid(1,0);    // 오른쪽으로 쏠렸습니다.
-    private static final Centroid centroid_front = new Centroid(-0.7,-1);     // 앞으로 쏠렸습니다.
-    private static final Centroid centroid_hipFront = new Centroid(0, 1);     // 엉덩이 앞으로 뺐습니다.
+    private static final Centroid centroid_standard = new Centroid(0.8,-2);  // 정자세 2, -0.4
+    private static final Centroid centroid_leanLeft = new Centroid(0,-2.7);      // 왼쪽으로 쏠렸습니다. 1.2, 0
+    private static final Centroid centroid_leanRight = new Centroid(2.5,-1.5);    // 오른쪽으로 쏠렸습니다. 3, -0.8
+    private static final Centroid centroid_front = new Centroid(0.8,-2);     // 앞으로 쏠렸습니다.
+    private static final Centroid centroid_hipFront = new Centroid(1.8, 1.5);     // 엉덩이 앞으로 뺐습니다.
 
     // Service의 동작 상태를 변경하기 위한 부분입니다.
     private Messenger mRemote;                   // Service <-> Activity 간에 통신을 하기 위한 Messenger입니다.
